@@ -8,7 +8,8 @@
 <title>AlpSport Yayın Kamerası</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:16px;background:#07111f;color:white;font-family:Arial,sans-serif}
+html,body{margin:0;min-height:100%;background:#07111f;color:white;font-family:Arial,sans-serif}
+body{padding:16px}
 main{max-width:900px;margin:auto}
 h1{color:#b8ff35;font-size:23px}
 p{color:#c5d1df;line-height:1.5}
@@ -34,7 +35,7 @@ const message=document.getElementById("message");
 if(!room||!/^[a-zA-Z0-9_-]{8,100}$/.test(room)){
  message.textContent="Yayın kodu geçersiz. Yönetim panelinden yeniden başlat.";
 }else{
- frame.src="https://vdo.ninja/?push="+encodeURIComponent(room)+"&cleanoutput&autostart=1";
+ frame.src="https://vdo.ninja/?push="+encodeURIComponent(room)+"&cleanoutput=1&autostart=1&aspectratio=landscape&width=1280&height=720&quality=0";
 }
 
 function stop(){
@@ -46,6 +47,10 @@ document.getElementById("stop").addEventListener("click",stop);
 
 window.addEventListener("storage",event=>{
  if(event.key==="alpsport_stop_camera")stop();
+});
+
+window.addEventListener("message",event=>{
+ if(event.data&&event.data.type==="ALPSPORT_STOP")stop();
 });
 </script>
 </body>
