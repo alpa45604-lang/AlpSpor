@@ -3,52 +3,65 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>AlpSport | Canlı Spor Merkezi</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#07111f;color:white;font-family:Arial,sans-serif}
-header{background:#0c1b2e;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #20334a}
-.logo{font-size:27px;font-weight:900;color:#b8ff35;letter-spacing:1px}
-.logo span{color:white}
-nav a{color:#dce5ef;text-decoration:none;margin-left:18px;font-size:14px}
-.hero{padding:55px 7%;background:linear-gradient(120deg,#102b45,#07111f)}
-.hero h1{font-size:clamp(30px,6vw,52px);margin:0 0 15px}
+body{margin:0;background:#07111f;color:#fff;font-family:Arial,sans-serif}
+header{background:#0c1b2e;padding:17px 5%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #20334a}
+.logo{font-size:27px;font-weight:900;color:#b8ff35}
+.logo span{color:#fff}
+nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
+.hero{padding:35px 6%;background:linear-gradient(120deg,#102b45,#07111f)}
+.hero h1{font-size:clamp(28px,5vw,45px);margin:0 0 10px}
 .hero h1 span{color:#b8ff35}
-.hero p{color:#aab9ca;line-height:1.6}
-.container{width:92%;max-width:1200px;margin:35px auto}
-.section{margin-bottom:45px}
-.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
-.section-title h2{font-size:22px}
+.hero p{color:#aab9ca;line-height:1.5}
+.container{width:94%;max-width:1100px;margin:25px auto}
+.section{margin-bottom:35px}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
+.section-title h2{font-size:21px;margin:0}
 .live-label{color:#ff5555;font-size:12px;font-weight:bold}
-.matches{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.match{background:#102137;border:1px solid #233a52;border-radius:13px;padding:18px}
-.match-top{display:flex;justify-content:space-between;gap:8px;color:#9fb1c5;font-size:12px;margin-bottom:20px}
+.ad-list{display:flex;flex-direction:column;gap:12px;margin:15px 0 22px}
+.ad-slot{display:block;width:100%;height:105px;background:#102137;border:1px dashed #53677e;border-radius:8px;overflow:hidden;text-decoration:none}
+.ad-slot img{width:100%;height:100%;object-fit:cover;display:block}
+.ad-placeholder{height:100%;display:flex;align-items:center;justify-content:center;color:#8195aa;font-size:13px}
+.player-card{background:#102137;border:1px solid #29425d;border-radius:12px;padding:14px}
+.player-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.player-heading strong{font-size:17px}
+.player-frame-wrap{width:100%;aspect-ratio:16/9;background:#000;border-radius:9px;overflow:hidden;position:relative}
+#liveFrame{width:100%;height:100%;border:0;display:block;background:#000}
+.player-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#aab9ca;padding:20px}
+.player-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.player-controls button{flex:1;min-width:130px}
+button{border:0;border-radius:7px;padding:12px;background:#b8ff35;color:#07111f;font-weight:bold;cursor:pointer}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:13px}
+.stat{background:#0b192a;border:1px solid #29425d;border-radius:8px;padding:12px 16px;flex:1;min-width:130px}
+.stat small{display:block;color:#9fb1c5;margin-bottom:6px}
+.stat strong{font-size:22px;color:#b8ff35}
+.matches{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.match{background:#102137;border:1px solid #233a52;border-radius:11px;padding:16px}
+.match-top{display:flex;justify-content:space-between;gap:8px;color:#9fb1c5;font-size:12px;margin-bottom:16px}
 .status-live{color:#ff5555;font-weight:bold}
 .teams{display:flex;align-items:center;justify-content:space-around;text-align:center;gap:8px}
 .team{flex:1;font-size:13px;font-weight:bold;overflow-wrap:anywhere}
-.team img{width:45px;height:45px;object-fit:contain;display:block;margin:0 auto 9px}
-.vs{color:#b8ff35;font-weight:bold;font-size:15px}
-.match-date{text-align:center;color:#9fb1c5;font-size:12px;margin-top:18px}
-.watch{width:100%;border:0;border-radius:8px;padding:13px;margin-top:18px;background:#b8ff35;color:#07111f;font-weight:bold;cursor:pointer}
-.watch:disabled{background:#536273;color:#ddd;cursor:not-allowed}
-.empty{background:#102137;border:1px dashed #38516b;padding:25px;border-radius:12px;text-align:center;color:#aab9ca;grid-column:1/-1}
+.team img{width:42px;height:42px;object-fit:contain;display:block;margin:0 auto 8px}
+.vs{color:#b8ff35;font-weight:bold}
+.match-date{text-align:center;color:#9fb1c5;font-size:12px;margin-top:15px}
+.watch{width:100%;margin-top:14px}
+.watch:disabled{background:#536273;color:#ddd}
+.empty{background:#102137;border:1px dashed #38516b;padding:22px;border-radius:10px;text-align:center;color:#aab9ca;grid-column:1/-1}
 .info{color:#8499af;font-size:12px;line-height:1.5;margin-top:12px}
-footer{margin-top:60px;padding:30px 6%;background:#0c1b2e;color:#8295aa;text-align:center;font-size:13px}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:100;align-items:center;justify-content:center;padding:15px}
-.modal.open{display:flex}
-.player-box{width:100%;max-width:950px}
-.player-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.close{background:#ff4141;border:0;color:white;padding:10px 15px;border-radius:7px}
-video{width:100%;background:#000;border-radius:10px;max-height:75vh}
-.message{color:#ffd27b;font-size:13px;margin-top:10px}
+footer{margin-top:50px;padding:28px 5%;background:#0c1b2e;color:#8295aa;text-align:center;font-size:13px}
 @media(max-width:600px){
  header{padding:14px 4%}
  .logo{font-size:22px}
  nav a{font-size:11px;margin-left:8px}
- .hero{padding:40px 6%}
+ .hero{padding:30px 5%}
+ .container{width:94%;margin:18px auto}
  .section-title h2{font-size:19px}
+ .ad-slot{height:90px}
+ .player-card{padding:9px}
 }
 </style>
 </head>
@@ -59,7 +72,7 @@ video{width:100%;background:#000;border-radius:10px;max-height:75vh}
  <nav>
   <a href="#canli">Canlı</a>
   <a href="#fikstur">Fikstür</a>
-  <a href="#yayınlar">Yayınlarım</a>
+  <a href="/admin.html">Yönetim</a>
  </nav>
 </header>
 
@@ -71,6 +84,54 @@ video{width:100%;background:#000;border-radius:10px;max-height:75vh}
 <main class="container">
 
 <section class="section" id="canli">
+ <div class="section-title">
+  <h2>● ALPSPORT CANLI YAYIN</h2>
+  <span class="live-label">● CANLI</span>
+ </div>
+
+ <div class="ad-list" id="topAds">
+  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 1</div></div>
+  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 2</div></div>
+  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 3</div></div>
+ </div>
+
+ <div class="player-card">
+  <div class="player-heading">
+   <strong id="playerTitle">Canlı yayın bekleniyor</strong>
+   <span class="live-label" id="playerStatus">● BEKLENİYOR</span>
+  </div>
+
+  <div class="player-frame-wrap" id="playerWrap">
+   <div class="player-empty" id="playerEmpty">
+    Şu anda AlpSport üzerinden başlatılmış canlı yayın bulunmuyor.
+   </div>
+  </div>
+
+  <div class="player-controls">
+   <button id="fullscreenButton" type="button">TAM EKRAN</button>
+  </div>
+
+  <div class="stats">
+   <div class="stat">
+    <small>Şu an izleyen</small>
+    <strong id="activeViewers">0</strong>
+   </div>
+   <div class="stat">
+    <small>Toplam izlenme oturumu</small>
+    <strong id="totalViews">0</strong>
+   </div>
+  </div>
+  <p class="info">İzleyici sayıları, yayın oynatıcısını açan oturumlara göre hesaplanır.</p>
+ </div>
+
+ <div class="ad-list" id="bottomAds">
+  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 4</div></div>
+  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 5</div></div>
+  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 6</div></div>
+ </div>
+</section>
+
+<section class="section">
  <div class="section-title">
   <h2>Canlı Maçlar</h2>
   <span class="live-label">● CANLI</span>
@@ -88,13 +149,11 @@ video{width:100%;background:#000;border-radius:10px;max-height:75vh}
  <div class="matches" id="automaticUpcoming">
   <div class="empty">Fikstür yükleniyor...</div>
  </div>
- <p class="info">Maç bilgileri bağlı futbol veri sağlayıcısından alınır. Desteklenmeyen ligler için gerçek maç verisi gösterilemeyebilir.</p>
+ <p class="info">Maç bilgileri bağlı futbol veri sağlayıcısından alınır.</p>
 </section>
 
-<section class="section" id="yayınlar">
- <div class="section-title">
-  <h2>AlpSport Yayınları</h2>
- </div>
+<section class="section">
+ <div class="section-title"><h2>AlpSport Yayınları</h2></div>
  <div class="matches" id="adminMatches">
   <div class="empty">Yayınlar yükleniyor...</div>
  </div>
@@ -108,27 +167,17 @@ video{width:100%;background:#000;border-radius:10px;max-height:75vh}
  <a href="/admin.html" style="color:#b8ff35;text-decoration:none">Yönetici Girişi</a>
 </footer>
 
-<div class="modal" id="playerModal">
- <div class="player-box">
-  <div class="player-head">
-   <strong id="playerTitle">AlpSport Canlı Yayın</strong>
-   <button class="close" id="closePlayer">KAPAT ✕</button>
-  </div>
-  <video id="videoPlayer" controls playsinline></video>
-  <div class="message" id="playerMessage"></div>
- </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <script>
 const liveArea=document.getElementById("automaticLive");
 const upcomingArea=document.getElementById("automaticUpcoming");
 const adminArea=document.getElementById("adminMatches");
-const modal=document.getElementById("playerModal");
-const video=document.getElementById("videoPlayer");
+const playerWrap=document.getElementById("playerWrap");
 
-let hls=null;
 let adminMatches=[];
+let selectedMatch=null;
+let heartbeatTimer=null;
+let statsTimer=null;
+let viewerId="";
 
 function safe(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
@@ -138,7 +187,7 @@ function safe(value){
 }
 
 function imageHTML(url){
- if(!url || !/^https:\/\//i.test(url))return "";
+ if(!url||!/^https:\/\//i.test(url))return "";
  return `<img src="${safe(url)}" alt="" loading="lazy">`;
 }
 
@@ -157,17 +206,13 @@ function automaticCard(m){
  const live=["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT"].includes(status);
  const finished=status==="FINISHED";
  const score=m.score?.fullTime;
- const scoreText=score && (score.home!==null || score.away!==null)
-  ? `${score.home??"-"} - ${score.away??"-"}` : "VS";
-
- const stateText=live?"● CANLI":finished?"TAMAMLANDI":
-  status==="POSTPONED"?"ERTELENDİ":"YAKLAŞAN";
-
+ const scoreText=score&&(score.home!==null||score.away!==null)
+  ?`${score.home??"-"} - ${score.away??"-"}`:"VS";
  return `
  <article class="match">
   <div class="match-top">
    <span>${safe(m.competition?.name||"Futbol")}</span>
-   <span class="${live?"status-live":""}">${stateText}</span>
+   <span class="${live?"status-live":""}">${live?"● CANLI":finished?"TAMAMLANDI":"YAKLAŞAN"}</span>
   </div>
   <div class="teams">
    <div class="team">${imageHTML(m.homeTeam?.crest)}${safe(m.homeTeam?.name||"Ev sahibi")}</div>
@@ -182,8 +227,7 @@ async function loadAutomatic(){
  try{
   const r=await fetch("/api/football",{cache:"no-store"});
   const data=await r.json();
-  if(!r.ok)throw new Error(data.error||"Veri alınamadı");
-
+  if(!r.ok)throw new Error();
   const matches=Array.isArray(data.matches)?data.matches:[];
   const live=matches.filter(m=>
    ["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT"].includes(String(m.status))
@@ -191,15 +235,8 @@ async function loadAutomatic(){
   const upcoming=matches.filter(m=>
    !["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT","FINISHED","CANCELLED"].includes(String(m.status))
   );
-
-  liveArea.innerHTML=live.length
-   ?live.map(automaticCard).join("")
-   :'<div class="empty">Şu anda veri sağlayıcısında canlı maç görünmüyor.</div>';
-
-  upcomingArea.innerHTML=upcoming.length
-   ?upcoming.map(automaticCard).join("")
-   :'<div class="empty">Bu tarih aralığında yaklaşan maç bulunamadı.</div>';
-
+  liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda veri sağlayıcısında canlı maç görünmüyor.</div>';
+  upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan maç bulunamadı.</div>';
  }catch(e){
   liveArea.innerHTML='<div class="empty">Canlı maç verisi şu anda alınamıyor.</div>';
   upcomingArea.innerHTML='<div class="empty">Fikstür verisi şu anda alınamıyor.</div>';
@@ -208,9 +245,6 @@ async function loadAutomatic(){
 
 function adminCard(m){
  const live=m.status==="live";
- const canPlay=live && m.stream_url &&
-  /^https:\/\//i.test(m.stream_url);
-
  return `
  <article class="match">
   <div class="match-top">
@@ -223,10 +257,88 @@ function adminCard(m){
    <div class="team">${imageHTML(m.away_logo)}${safe(m.away_team)}</div>
   </div>
   <div class="match-date">${dateText(m.match_time)}</div>
-  <button class="watch" data-play-id="${safe(m.id)}" ${canPlay?"":"disabled"}>
-   ${canPlay?"MAÇI İZLE":"YAYIN HAZIR DEĞİL"}
+  <button class="watch" data-play-id="${safe(m.id)}" ${live&&m.stream_url?"":"disabled"}>
+   ${live&&m.stream_url?"BU YAYINI İZLE":"YAYIN HAZIR DEĞİL"}
   </button>
  </article>`;
+}
+
+function makeViewerId(){
+ try{
+  let id=sessionStorage.getItem("alpsport_viewer_id");
+  if(!id){
+   id="viewer_"+crypto.randomUUID().replace(/-/g,"");
+   sessionStorage.setItem("alpsport_viewer_id",id);
+  }
+  return id;
+ }catch(e){
+  return "viewer_"+crypto.randomUUID().replace(/-/g,"");
+ }
+}
+
+function stopTracking(){
+ if(heartbeatTimer)clearInterval(heartbeatTimer);
+ if(statsTimer)clearInterval(statsTimer);
+ heartbeatTimer=null;
+ statsTimer=null;
+}
+
+function showNoLive(){
+ stopTracking();
+ selectedMatch=null;
+ playerWrap.innerHTML='<div class="player-empty">Şu anda AlpSport üzerinden başlatılmış canlı yayın bulunmuyor.</div>';
+ document.getElementById("playerTitle").textContent="Canlı yayın bekleniyor";
+ document.getElementById("playerStatus").textContent="● BEKLENİYOR";
+ document.getElementById("activeViewers").textContent="0";
+ document.getElementById("totalViews").textContent="0";
+}
+
+async function sendHeartbeat(){
+ if(!selectedMatch||document.hidden)return;
+ try{
+  await fetch("/api/viewers",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    match_id:selectedMatch.id,
+    viewer_id:viewerId
+   })
+  });
+ }catch(e){}
+}
+
+async function loadViewerStats(){
+ if(!selectedMatch)return;
+ try{
+  const r=await fetch("/api/viewers?match_id="+encodeURIComponent(selectedMatch.id),{cache:"no-store"});
+  if(!r.ok)return;
+  const data=await r.json();
+  document.getElementById("activeViewers").textContent=Number(data.active_viewers||0).toLocaleString("tr-TR");
+  document.getElementById("totalViews").textContent=Number(data.total_views||0).toLocaleString("tr-TR");
+ }catch(e){}
+}
+
+function playMatch(m){
+ if(!m||!m.stream_url)return;
+ stopTracking();
+ selectedMatch=m;
+ viewerId=makeViewerId();
+
+ document.getElementById("playerTitle").textContent=m.title||"AlpSport Canlı Yayın";
+ document.getElementById("playerStatus").textContent="● CANLI";
+
+ playerWrap.innerHTML=`
+  <iframe id="liveFrame"
+   src="${safe(m.stream_url)}"
+   allow="autoplay; fullscreen; picture-in-picture"
+   allowfullscreen
+   referrerpolicy="strict-origin-when-cross-origin"
+   title="AlpSport canlı yayın"></iframe>`;
+
+ sendHeartbeat();
+ loadViewerStats();
+ heartbeatTimer=setInterval(sendHeartbeat,25000);
+ statsTimer=setInterval(loadViewerStats,20000);
 }
 
 async function loadAdminMatches(){
@@ -234,64 +346,91 @@ async function loadAdminMatches(){
   const r=await fetch("/api/matches",{cache:"no-store"});
   if(!r.ok)throw new Error();
   const data=await r.json();
-  adminMatches=Array.isArray(data)?data:(data.matches||[]);
-  const visible=adminMatches.filter(m=>m.status!=="finished");
-  adminArea.innerHTML=visible.length
-   ?visible.map(adminCard).join("")
+  adminMatches=Array.isArray(data.matches)?data.matches:[];
+  const live=adminMatches.filter(m=>m.status==="live"&&m.stream_url);
+
+  adminArea.innerHTML=adminMatches.filter(m=>m.status!=="finished").length
+   ?adminMatches.filter(m=>m.status!=="finished").map(adminCard).join("")
    :'<div class="empty">Henüz yönetici tarafından yayın eklenmedi.</div>';
+
+  if(!selectedMatch){
+   if(live.length)playMatch(live[0]);
+   else showNoLive();
+  }else{
+   const stillLive=live.find(m=>String(m.id)===String(selectedMatch.id));
+   if(!stillLive){
+    if(live.length)playMatch(live[0]);
+    else showNoLive();
+   }else{
+    selectedMatch=stillLive;
+   }
+  }
  }catch(e){
   adminArea.innerHTML='<div class="empty">Yayın listesi şu anda alınamıyor.</div>';
  }
 }
 
-function openPlayer(id){
- const m=adminMatches.find(x=>String(x.id)===String(id));
- if(!m||!m.stream_url)return;
-
- closePlayer(false);
- document.getElementById("playerTitle").textContent=m.title||"AlpSport Canlı Yayın";
- document.getElementById("playerMessage").textContent="";
- modal.classList.add("open");
-
- if(video.canPlayType("application/vnd.apple.mpegurl")){
-  video.src=m.stream_url;
-  video.play().catch(()=>{});
- }else if(window.Hls&&Hls.isSupported()){
-  hls=new Hls();
-  hls.loadSource(m.stream_url);
-  hls.attachMedia(video);
-  hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));
-  hls.on(Hls.Events.ERROR,(event,data)=>{
-   if(data.fatal)document.getElementById("playerMessage").textContent="Yayın açılamadı.";
-  });
- }else{
-  document.getElementById("playerMessage").textContent="Bu cihaz yayın biçimini desteklemiyor.";
- }
-}
-
-function closePlayer(hide=true){
- if(hls){hls.destroy();hls=null;}
- video.pause();
- video.removeAttribute("src");
- video.load();
- if(hide)modal.classList.remove("open");
-}
-
 adminArea.addEventListener("click",e=>{
  const btn=e.target.closest("[data-play-id]");
- if(btn)openPlayer(btn.dataset.playId);
+ if(!btn)return;
+ const m=adminMatches.find(x=>String(x.id)===String(btn.dataset.playId));
+ if(m)playMatch(m);
 });
 
-document.getElementById("closePlayer").addEventListener("click",()=>closePlayer());
-modal.addEventListener("click",e=>{
- if(e.target===modal)closePlayer();
+document.getElementById("fullscreenButton").addEventListener("click",async()=>{
+ const frame=document.getElementById("liveFrame");
+ if(!frame){
+  alert("Şu anda açık bir canlı yayın yok.");
+  return;
+ }
+ try{
+  if(frame.requestFullscreen)await frame.requestFullscreen();
+  else if(frame.webkitRequestFullscreen)frame.webkitRequestFullscreen();
+  try{
+   if(screen.orientation&&screen.orientation.lock){
+    await screen.orientation.lock("landscape");
+   }
+  }catch(e){}
+ }catch(e){
+  alert("Tam ekran için telefon tarayıcısının izin vermesi gerekiyor.");
+ }
 });
+
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden&&selectedMatch){
+  sendHeartbeat();
+  loadViewerStats();
+ }
+});
+
+async function loadAds(){
+ try{
+  const r=await fetch("/api/ads",{cache:"no-store"});
+  if(!r.ok)return;
+  const data=await r.json();
+  const ads=Array.isArray(data.ads)?data.ads:[];
+  const render=(slot,number)=>{
+   const ad=ads.find(x=>x.slot===slot&&Number(x.active)===1&&x.image_url);
+   if(!ad)return `<div class="ad-slot"><div class="ad-placeholder">Reklam alanı ${number}</div></div>`;
+   const image=`<img src="${safe(ad.image_url)}" alt="Reklam" loading="lazy">`;
+   if(ad.target_url){
+    return `<a class="ad-slot" href="${safe(ad.target_url)}" target="_blank" rel="noopener noreferrer">${image}</a>`;
+   }
+   return `<div class="ad-slot">${image}</div>`;
+  };
+  document.getElementById("topAds").innerHTML=
+   [render("top1",1),render("top2",2),render("top3",3)].join("");
+  document.getElementById("bottomAds").innerHTML=
+   [render("bottom1",4),render("bottom2",5),render("bottom3",6)].join("");
+ }catch(e){}
+}
 
 loadAutomatic();
 loadAdminMatches();
-
+loadAds();
 setInterval(loadAutomatic,300000);
-setInterval(loadAdminMatches,30000);
+setInterval(loadAdminMatches,15000);
+setInterval(loadAds,60000);
 </script>
 </body>
 </html>
