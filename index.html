@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlpSport | Canlı Spor Merkezi</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:white;font-family:Arial,sans-serif}
+header{padding:20px 7%;display:flex;justify-content:space-between;align-items:center;background:#0c1929;border-bottom:1px solid #26384b}
+.logo{font-size:28px;font-weight:900;color:white}
+.logo span{color:#c7f36b}
+nav a{color:white;text-decoration:none;margin-left:20px;font-size:14px}
+.hero{padding:85px 8%;background:linear-gradient(120deg,#07111f,#18344a);min-height:430px}
+.hero h1{font-size:55px;line-height:1.05;margin:15px 0}
+.hero h1 span{color:#c7f36b}
+.hero p{color:#aebdce;line-height:1.7;max-width:450px}
+.btn{display:inline-block;background:#c7f36b;color:#07111f;padding:15px 22px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:18px}
+section{padding:45px 8%}
+h2{font-size:32px}
+.player{background:#101e30;border:1px solid #34465b;border-radius:12px;overflow:hidden}
+.screen{background:#03080e;min-height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}
+.screen video{width:100%;max-height:500px}
+.controls{padding:20px}
+input{width:70%;padding:14px;background:#07111f;border:1px solid #526276;color:white;border-radius:5px}
+button{padding:14px;background:#c7f36b;border:0;border-radius:5px;font-weight:bold;cursor:pointer}
+.card{background:#101e30;padding:22px;border-radius:10px;border:1px solid #34465b}
+footer{padding:30px;text-align:center;color:#9eafc3;border-top:1px solid #26384b}
+@media(max-width:600px){header{padding:15px 5%;flex-wrap:wrap;gap:15px}nav a{margin-left:10px;font-size:12px}.hero{padding:65px 7%}.hero h1{font-size:43px}section{padding:35px 6%}input{width:100%;margin-bottom:10px}button{width:100%}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">Alp<span>Sport</span></div>
+<nav>
+<a href="#anasayfa">Ana Sayfa</a>
+<a href="#canli">Canlı Yayın</a>
+<a href="#maclar">Maçlar</a>
+</nav>
+</header>
+
+<div class="hero" id="anasayfa">
+<p>HEYECAN BURADA BAŞLIYOR</p>
+<h1>Sporun heyecanı<br><span>AlpSport'ta!</span></h1>
+<p>Canlı spor yayınları ve spor dünyasının heyecanı tek adreste.</p>
+<a class="btn" href="#canli">CANLI YAYINA GİT ▶</a>
+</div>
+
+<section id="canli">
+<h2>🔴 Canlı Yayın Merkezi</h2>
+<div class="player">
+<div class="screen" id="screen">
+<div style="font-size:45px;color:#c7f36b">▶</div>
+<h3>AlpSport Canlı Yayın</h3>
+<p>Yayın başladığında görüntü burada gösterilecek.</p>
+</div>
+<div class="controls">
+<p>Kendi yayın adresini gir (HLS / M3U8)</p>
+<input id="stream" placeholder="https://ornek.com/yayin.m3u8">
+<button onclick="playStream()">YAYINI AÇ</button>
+</div>
+</div>
+</section>
+
+<section id="maclar">
+<h2>⚽ Maç Alanı</h2>
+<div class="card">
+<h3>Maç programı hazırlanıyor</h3>
+<p>Karşılaşma bilgileri bu alanda yayınlanacak.</p>
+</div>
+</section>
+
+<footer>
+<div class="logo">Alp<span>Sport</span></div>
+<p>© 2026 AlpSport. Tüm hakları saklıdır.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+function playStream(){
+const url=document.getElementById('stream').value.trim();
+if(!url){alert('Önce yayın adresini gir.');return;}
+if(!/^https?:\/\//i.test(url)){alert('Geçerli bir yayın adresi gir.');return;}
+const screen=document.getElementById('screen');
+screen.innerHTML='<video id="video" controls autoplay playsinline></video>';
+const video=document.getElementById('video');
+if(video.canPlayType('application/vnd.apple.mpegurl')){
+video.src=url;video.play().catch(()=>{});
+}else if(window.Hls&&Hls.isSupported()){
+const hls=new Hls();hls.loadSource(url);hls.attachMedia(video);
+hls.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal)alert('Yayın açılamadı.');});
+}else{alert('Tarayıcı yayın biçimini desteklemiyor.');}
+}
+</script>
+</body>
+</html>
