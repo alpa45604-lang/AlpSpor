@@ -1,143 +1,165 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#07111f">
-<title>AlpSport | Canlı Spor Merkezi</title>
+<title>AlpSport | Yönetim Paneli</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#07111f;color:white;font-family:Arial,sans-serif}
-header{background:#0c1b2e;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #20334a}
-.logo{font-size:27px;font-weight:900;color:#b8ff35;letter-spacing:1px}
-.logo span{color:white}
-nav a{color:#dce5ef;text-decoration:none;margin-left:18px;font-size:14px}
-.hero{padding:55px 7%;background:linear-gradient(120deg,#102b45,#07111f)}
-.hero h1{font-size:clamp(30px,6vw,52px);margin:0 0 15px}
-.hero h1 span{color:#b8ff35}
-.hero p{color:#aab9ca;line-height:1.6}
-.container{width:92%;max-width:1200px;margin:35px auto}
-.section{margin-bottom:45px}
-.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
-.section-title h2{font-size:22px}
-.live-label{color:#ff5555;font-size:12px;font-weight:bold}
-.matches{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.match{background:#102137;border:1px solid #233a52;border-radius:13px;padding:18px}
-.match-top{display:flex;justify-content:space-between;gap:8px;color:#9fb1c5;font-size:12px;margin-bottom:20px}
-.status-live{color:#ff5555;font-weight:bold}
-.teams{display:flex;align-items:center;justify-content:space-around;text-align:center;gap:8px}
-.team{flex:1;font-size:13px;font-weight:bold;overflow-wrap:anywhere}
-.team img{width:45px;height:45px;object-fit:contain;display:block;margin:0 auto 9px}
-.vs{color:#b8ff35;font-weight:bold;font-size:15px}
-.match-date{text-align:center;color:#9fb1c5;font-size:12px;margin-top:18px}
-.watch{width:100%;border:0;border-radius:8px;padding:13px;margin-top:18px;background:#b8ff35;color:#07111f;font-weight:bold;cursor:pointer}
-.watch:disabled{background:#536273;color:#ddd;cursor:not-allowed}
-.empty{background:#102137;border:1px dashed #38516b;padding:25px;border-radius:12px;text-align:center;color:#aab9ca;grid-column:1/-1}
-.info{color:#8499af;font-size:12px;line-height:1.5;margin-top:12px}
-footer{margin-top:60px;padding:30px 6%;background:#0c1b2e;color:#8295aa;text-align:center;font-size:13px}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:100;align-items:center;justify-content:center;padding:15px}
-.modal.open{display:flex}
-.player-box{width:100%;max-width:950px}
-.player-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.close{background:#ff4141;border:0;color:white;padding:10px 15px;border-radius:7px}
-video{width:100%;background:#000;border-radius:10px;max-height:75vh}
-#vdoFrame{display:none;width:100%;height:min(75vh,600px);min-height:250px;background:#000;border:0;border-radius:10px}
-.message{color:#ffd27b;font-size:13px;margin-top:10px}
+body{margin:0;background:#07111f;color:#fff;font-family:Arial,sans-serif}
+header{background:#0c1b2e;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #263b52}
+.logo{font-size:25px;font-weight:900;color:#b8ff35}
+.logo span{color:#fff}
+.container{width:94%;max-width:1000px;margin:25px auto}
+.panel{background:#102137;border:1px solid #29425d;border-radius:13px;padding:20px;margin-bottom:20px}
+h1{font-size:24px;margin:0 0 8px}
+h2{font-size:19px;margin:0 0 16px}
+p{color:#aab9ca;line-height:1.5}
+input,select{width:100%;padding:13px;margin:7px 0 14px;background:#07111f;color:white;border:1px solid #38516b;border-radius:7px;font-size:15px}
+label{font-size:13px;color:#c9d5e2}
+button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:pointer}
+.primary{background:#b8ff35;color:#07111f;width:100%}
+.secondary{background:#29425d;color:white}
+.danger{background:#d83c3c;color:white}
+.success{color:#b8ff35}
+.error{color:#ff7777}
+.hidden{display:none!important}
+#cameraFrame{width:100%;height:380px;background:#000;border:1px solid #38516b;border-radius:9px}
+.camera-buttons{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.camera-buttons button{flex:1;min-width:130px}
+.match{background:#0b192a;border:1px solid #29425d;border-radius:9px;padding:15px;margin:12px 0}
+.match-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px}
+.match small{color:#9fb1c5}
+.match-actions{display:flex;gap:8px;margin-top:12px}
+.match-actions button{flex:1}
+.notice{font-size:12px;color:#aab9ca}
+#message{margin-top:12px;font-size:14px}
 @media(max-width:600px){
- header{padding:14px 4%}
- .logo{font-size:22px}
- nav a{font-size:11px;margin-left:8px}
- .hero{padding:40px 6%}
- .section-title h2{font-size:19px}
+ header{padding:15px 4%}
+ .logo{font-size:21px}
+ .container{width:94%;margin:16px auto}
+ .panel{padding:15px}
+ #cameraFrame{height:280px}
 }
 </style>
 </head>
 <body>
 
 <header>
- <div class="logo">ALP<span>SPORT</span></div>
- <nav>
-  <a href="#canli">Canlı</a>
-  <a href="#fikstur">Fikstür</a>
-  <a href="#yayınlar">Yayınlarım</a>
- </nav>
+ <div class="logo">ALP<span>SPORT</span> YÖNETİM</div>
+ <button id="logoutButton" class="secondary hidden">ÇIKIŞ</button>
 </header>
-
-<section class="hero">
- <h1>HEYECAN <span>BURADA</span><br>BAŞLIYOR</h1>
- <p>Canlı spor, maç sonuçları ve güncel fikstür.<br>AlpSport ile heyecanı takip et.</p>
-</section>
 
 <main class="container">
 
-<section class="section" id="canli">
- <div class="section-title">
-  <h2>Canlı Maçlar</h2>
-  <span class="live-label">● CANLI</span>
- </div>
- <div class="matches" id="automaticLive">
-  <div class="empty">Canlı maçlar yükleniyor...</div>
- </div>
+<section id="loginPanel" class="panel">
+ <h1>Yönetici Girişi</h1>
+ <p>AlpSport yönetim paneline giriş yap.</p>
+
+ <form id="loginForm">
+  <label for="username">Kullanıcı adı</label>
+  <input id="username" autocomplete="username" required>
+
+  <label for="password">Şifre</label>
+  <input id="password" type="password" autocomplete="current-password" required>
+
+  <button class="primary" type="submit">GİRİŞ YAP</button>
+ </form>
+ <div id="loginMessage"></div>
 </section>
 
-<section class="section" id="fikstur">
- <div class="section-title">
-  <h2>Otomatik Maç Takvimi</h2>
-  <span style="color:#b8ff35;font-size:12px">● OTOMATİK</span>
- </div>
- <div class="matches" id="automaticUpcoming">
-  <div class="empty">Fikstür yükleniyor...</div>
- </div>
- <p class="info">Maç bilgileri bağlı futbol veri sağlayıcısından alınır. Desteklenmeyen ligler için gerçek maç verisi gösterilemeyebilir.</p>
-</section>
+<div id="adminPanel" class="hidden">
 
-<section class="section" id="yayınlar">
- <div class="section-title">
-  <h2>AlpSport Yayınları</h2>
- </div>
- <div class="matches" id="adminMatches">
-  <div class="empty">Yayınlar yükleniyor...</div>
- </div>
-</section>
+ <section class="panel">
+  <h1>AlpSport Yönetim Paneli</h1>
+  <p>Maçlarını ve canlı yayınlarını buradan yönetebilirsin.</p>
+ </section>
 
+ <section class="panel">
+  <h2>Telefon Kamerasından Canlı Yayın</h2>
+  <p>Yayın kamerası bu panelin içinde açılır. Kamera ve mikrofon izinlerini vermen gerekir.</p>
+
+  <iframe
+   id="cameraFrame"
+   allow="camera; microphone; autoplay; fullscreen; picture-in-picture"
+   allowfullscreen
+   title="AlpSport yayın kamerası">
+  </iframe>
+
+  <div class="camera-buttons">
+   <button id="startCamera" class="primary">KAMERAYI AÇ / YAYINI BAŞLAT</button>
+   <button id="stopCamera" class="danger">YAYINI DURDUR</button>
+  </div>
+
+  <label for="viewerUrl">İzleyici yayın adresi</label>
+  <input id="viewerUrl" readonly placeholder="Kamera başlatılınca otomatik oluşur">
+
+  <button id="copyViewerUrl" class="secondary" style="width:100%">İZLEYİCİ ADRESİNİ KOPYALA</button>
+
+  <p class="notice">Bu adres maç ekleme formundaki yayın adresine otomatik aktarılır. Yayın adresini başkalarıyla paylaşma; ziyaretçiler AlpSport üzerinden izler.</p>
+  <div id="cameraMessage"></div>
+ </section>
+
+ <section class="panel" id="matchFormPanel">
+  <h2 id="formTitle">Yeni Maç / Yayın Ekle</h2>
+
+  <form id="matchForm">
+   <input type="hidden" id="matchId">
+
+   <label>Yayın başlığı</label>
+   <input id="title" required placeholder="Örnek: Akşam Maçı">
+
+   <label>Ev sahibi takım</label>
+   <input id="homeTeam" required placeholder="Ev sahibi takım">
+
+   <label>Deplasman takımı</label>
+   <input id="awayTeam" required placeholder="Deplasman takımı">
+
+   <label>Ev sahibi logo adresi (isteğe bağlı)</label>
+   <input id="homeLogo" type="url" placeholder="https://...">
+
+   <label>Deplasman logo adresi (isteğe bağlı)</label>
+   <input id="awayLogo" type="url" placeholder="https://...">
+
+   <label>Maç tarihi ve saati</label>
+   <input id="matchTime" type="datetime-local" required>
+
+   <label>Yayın adresi</label>
+   <input id="streamUrl" type="url" placeholder="Kamerayı başlatınca otomatik doldurulur">
+
+   <label>Maç durumu</label>
+   <select id="matchStatus">
+    <option value="upcoming">Yaklaşan</option>
+    <option value="live">Canlı</option>
+    <option value="finished">Tamamlandı</option>
+   </select>
+
+   <button class="primary" type="submit" id="saveButton">MAÇI KAYDET</button>
+   <button class="secondary hidden" type="button" id="cancelEdit" style="width:100%;margin-top:9px">DÜZENLEMEYİ İPTAL ET</button>
+  </form>
+
+  <div id="formMessage"></div>
+ </section>
+
+ <section class="panel">
+  <h2>Eklenen Maçlar ve Yayınlar</h2>
+  <div id="matchesList">Maçlar yükleniyor...</div>
+ </section>
+
+</div>
 </main>
 
-<footer>
- <div class="logo">ALP<span>SPORT</span></div>
- <p>© 2026 AlpSport – Tüm hakları saklıdır.</p>
- <a href="/admin.html" style="color:#b8ff35;text-decoration:none">Yönetici Girişi</a>
-</footer>
-
-<div class="modal" id="playerModal">
- <div class="player-box">
-  <div class="player-head">
-   <strong id="playerTitle">AlpSport Canlı Yayın</strong>
-   <button class="close" id="closePlayer">KAPAT ✕</button>
-  </div>
-  <video id="videoPlayer" controls playsinline></video>
-  <iframe
-   id="vdoFrame"
-   allow="autoplay; fullscreen; picture-in-picture"
-   allowfullscreen
-   referrerpolicy="no-referrer"
-   title="AlpSport Canlı Yayın">
-  </iframe>
-  <div class="message" id="playerMessage"></div>
- </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 <script>
-const liveArea=document.getElementById("automaticLive");
-const upcomingArea=document.getElementById("automaticUpcoming");
-const adminArea=document.getElementById("adminMatches");
-const modal=document.getElementById("playerModal");
-const video=document.getElementById("videoPlayer");
-const vdoFrame=document.getElementById("vdoFrame");
+const loginPanel=document.getElementById("loginPanel");
+const adminPanel=document.getElementById("adminPanel");
+const loginMessage=document.getElementById("loginMessage");
+const formMessage=document.getElementById("formMessage");
+const cameraMessage=document.getElementById("cameraMessage");
+const cameraFrame=document.getElementById("cameraFrame");
 
-let hls=null;
-let adminMatches=[];
+let matches=[];
+let roomId="";
 
 function safe(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
@@ -146,184 +168,288 @@ function safe(value){
  }[c]));
 }
 
-function imageHTML(url){
- if(!url || !/^https:\/\//i.test(url))return "";
- return `<img src="${safe(url)}" alt="" loading="lazy">`;
+function showAdmin(){
+ loginPanel.classList.add("hidden");
+ adminPanel.classList.remove("hidden");
+ document.getElementById("logoutButton").classList.remove("hidden");
+ sessionStorage.setItem("alpsport_admin_ui","1");
+ loadMatches();
 }
 
-function dateText(value){
- if(!value)return "Tarih belirtilmedi";
- const d=new Date(value);
- if(Number.isNaN(d.getTime()))return safe(value);
- return d.toLocaleString("tr-TR",{
-  day:"2-digit",month:"2-digit",year:"numeric",
-  hour:"2-digit",minute:"2-digit"
- });
+function showLogin(){
+ adminPanel.classList.add("hidden");
+ loginPanel.classList.remove("hidden");
+ document.getElementById("logoutButton").classList.add("hidden");
+ sessionStorage.removeItem("alpsport_admin_ui");
 }
 
-function automaticCard(m){
- const status=String(m.status||"SCHEDULED");
- const live=["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT"].includes(status);
- const finished=status==="FINISHED";
- const score=m.score?.fullTime;
- const scoreText=score && (score.home!==null || score.away!==null)
-  ? `${score.home??"-"} - ${score.away??"-"}` : "VS";
+document.getElementById("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ loginMessage.textContent="Giriş kontrol ediliyor...";
+ loginMessage.className="";
 
- const stateText=live?"● CANLI":finished?"TAMAMLANDI":
-  status==="POSTPONED"?"ERTELENDİ":"YAKLAŞAN";
-
- return `
- <article class="match">
-  <div class="match-top">
-   <span>${safe(m.competition?.name||"Futbol")}</span>
-   <span class="${live?"status-live":""}">${stateText}</span>
-  </div>
-  <div class="teams">
-   <div class="team">${imageHTML(m.homeTeam?.crest)}${safe(m.homeTeam?.name||"Ev sahibi")}</div>
-   <div class="vs">${safe(scoreText)}</div>
-   <div class="team">${imageHTML(m.awayTeam?.crest)}${safe(m.awayTeam?.name||"Deplasman")}</div>
-  </div>
-  <div class="match-date">${dateText(m.utcDate)}</div>
- </article>`;
-}
-
-async function loadAutomatic(){
  try{
-  const r=await fetch("/api/football",{cache:"no-store"});
-  const data=await r.json();
-  if(!r.ok)throw new Error(data.error||"Veri alınamadı");
+  const response=await fetch("/api/login",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   credentials:"same-origin",
+   body:JSON.stringify({
+    username:document.getElementById("username").value.trim(),
+    password:document.getElementById("password").value
+   })
+  });
 
-  const matches=Array.isArray(data.matches)?data.matches:[];
-  const live=matches.filter(m=>
-   ["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT"].includes(String(m.status))
-  );
-  const upcoming=matches.filter(m=>
-   !["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT","FINISHED","CANCELLED"].includes(String(m.status))
-  );
+  const data=await response.json();
 
-  liveArea.innerHTML=live.length
-   ?live.map(automaticCard).join("")
-   :'<div class="empty">Şu anda veri sağlayıcısında canlı maç görünmüyor.</div>';
+  if(!response.ok)throw new Error(data.error||"Giriş başarısız.");
 
-  upcomingArea.innerHTML=upcoming.length
-   ?upcoming.map(automaticCard).join("")
-   :'<div class="empty">Bu tarih aralığında yaklaşan maç bulunamadı.</div>';
+  loginMessage.textContent="Giriş başarılı.";
+  loginMessage.className="success";
+  showAdmin();
 
+ }catch(error){
+  loginMessage.textContent=error.message;
+  loginMessage.className="error";
+ }
+});
+
+document.getElementById("logoutButton").addEventListener("click",async()=>{
+ try{
+  await fetch("/api/logout",{
+   method:"POST",
+   credentials:"same-origin"
+  });
+ }catch(e){}
+ stopCamera();
+ showLogin();
+});
+
+function getRoomId(){
+ try{
+  let id=localStorage.getItem("alpsport_camera_room");
+  if(!id){
+   id="AlpSport_"+crypto.randomUUID().replace(/-/g,"");
+   localStorage.setItem("alpsport_camera_room",id);
+  }
+  return id;
  }catch(e){
-  liveArea.innerHTML='<div class="empty">Canlı maç verisi şu anda alınamıyor.</div>';
-  upcomingArea.innerHTML='<div class="empty">Fikstür verisi şu anda alınamıyor.</div>';
+  return "AlpSport_"+crypto.randomUUID().replace(/-/g,"");
  }
 }
 
-function adminCard(m){
- const live=m.status==="live";
- const canPlay=live && m.stream_url &&
-  /^https:\/\//i.test(m.stream_url);
+document.getElementById("startCamera").addEventListener("click",()=>{
+ roomId=getRoomId();
 
- return `
- <article class="match">
-  <div class="match-top">
-   <span>${safe(m.title||"AlpSport Yayını")}</span>
-   <span class="${live?"status-live":""}">${live?"● CANLI":m.status==="finished"?"TAMAMLANDI":"YAKLAŞAN"}</span>
-  </div>
-  <div class="teams">
-   <div class="team">${imageHTML(m.home_logo)}${safe(m.home_team)}</div>
-   <div class="vs">VS</div>
-   <div class="team">${imageHTML(m.away_logo)}${safe(m.away_team)}</div>
-  </div>
-  <div class="match-date">${dateText(m.match_time)}</div>
-  <button class="watch" data-play-id="${safe(m.id)}" ${canPlay?"":"disabled"}>
-   ${canPlay?"MAÇI İZLE":"YAYIN HAZIR DEĞİL"}
-  </button>
- </article>`;
+ const publishUrl="https://vdo.ninja/?push="+encodeURIComponent(roomId)+"&cleanoutput&autostart=1";
+ const watchUrl="https://vdo.ninja/?view="+encodeURIComponent(roomId)+"&autoplay=1";
+
+ cameraFrame.src=publishUrl;
+ document.getElementById("viewerUrl").value=watchUrl;
+ document.getElementById("streamUrl").value=watchUrl;
+
+ cameraMessage.textContent="Kamera açılıyor. Tarayıcı kamera ve mikrofon izni isterse izin ver.";
+ cameraMessage.className="success";
+});
+
+function stopCamera(){
+ cameraFrame.src="about:blank";
+ cameraMessage.textContent="Kamera panelden kapatıldı.";
+ cameraMessage.className="";
 }
 
-async function loadAdminMatches(){
+document.getElementById("stopCamera").addEventListener("click",stopCamera);
+
+document.getElementById("copyViewerUrl").addEventListener("click",async()=>{
+ const value=document.getElementById("viewerUrl").value;
+ if(!value){
+  cameraMessage.textContent="Önce kamerayı başlat.";
+  return;
+ }
  try{
-  const r=await fetch("/api/matches",{cache:"no-store"});
-  if(!r.ok)throw new Error();
-  const data=await r.json();
-  adminMatches=Array.isArray(data)?data:(data.matches||[]);
-  const visible=adminMatches.filter(m=>m.status!=="finished");
-  adminArea.innerHTML=visible.length
-   ?visible.map(adminCard).join("")
-   :'<div class="empty">Henüz yönetici tarafından yayın eklenmedi.</div>';
+  await navigator.clipboard.writeText(value);
+  cameraMessage.textContent="İzleyici adresi kopyalandı.";
  }catch(e){
-  adminArea.innerHTML='<div class="empty">Yayın listesi şu anda alınamıyor.</div>';
+  document.getElementById("viewerUrl").select();
+  cameraMessage.textContent="Adresi seçip kopyalayabilirsin.";
+ }
+});
+
+async function loadMatches(){
+ const list=document.getElementById("matchesList");
+ list.textContent="Maçlar yükleniyor...";
+
+ try{
+  const response=await fetch("/api/matches",{
+   cache:"no-store",
+   credentials:"same-origin"
+  });
+
+  const data=await response.json();
+
+  if(response.status===401){
+   showLogin();
+   throw new Error("Oturum süresi dolmuş. Tekrar giriş yap.");
+  }
+
+  if(!response.ok)throw new Error(data.error||"Maçlar alınamadı.");
+
+  matches=Array.isArray(data.matches)?data.matches:[];
+  renderMatches();
+
+ }catch(error){
+  list.textContent=error.message;
  }
 }
 
-function isVdoNinja(url){
- try{
-  const parsed=new URL(url);
-  return parsed.protocol==="https:" &&
-   (parsed.hostname==="vdo.ninja" || parsed.hostname.endsWith(".vdo.ninja"));
- }catch(e){
-  return false;
- }
-}
+function renderMatches(){
+ const list=document.getElementById("matchesList");
 
-function openPlayer(id){
- const m=adminMatches.find(x=>String(x.id)===String(id));
- if(!m||!m.stream_url)return;
-
- closePlayer(false);
- document.getElementById("playerTitle").textContent=m.title||"AlpSport Canlı Yayın";
- document.getElementById("playerMessage").textContent="";
- modal.classList.add("open");
-
- if(isVdoNinja(m.stream_url)){
-  video.style.display="none";
-  vdoFrame.style.display="block";
-  vdoFrame.src=m.stream_url;
+ if(!matches.length){
+  list.innerHTML='<p>Henüz maç veya yayın eklenmemiş.</p>';
   return;
  }
 
- vdoFrame.style.display="none";
- video.style.display="block";
+ list.innerHTML=matches.map(m=>`
+  <div class="match">
+   <div class="match-top">
+    <strong>${safe(m.title)}</strong>
+    <small>${m.status==="live"?"● CANLI":m.status==="finished"?"TAMAMLANDI":"YAKLAŞAN"}</small>
+   </div>
+   <div>${safe(m.home_team)} - ${safe(m.away_team)}</div>
+   <small>${safe(new Date(m.match_time).toLocaleString("tr-TR"))}</small>
+   <div class="match-actions">
+    <button class="secondary" data-edit="${safe(m.id)}">DÜZENLE</button>
+    <button class="danger" data-delete="${safe(m.id)}">SİL</button>
+   </div>
+  </div>
+ `).join("");
+}
 
- if(video.canPlayType("application/vnd.apple.mpegurl")){
-  video.src=m.stream_url;
-  video.play().catch(()=>{});
- }else if(window.Hls&&Hls.isSupported()){
-  hls=new Hls();
-  hls.loadSource(m.stream_url);
-  hls.attachMedia(video);
-  hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));
-  hls.on(Hls.Events.ERROR,(event,data)=>{
-   if(data.fatal)document.getElementById("playerMessage").textContent="Yayın açılamadı.";
-  });
- }else{
-  document.getElementById("playerMessage").textContent="Bu cihaz yayın biçimini desteklemiyor.";
+function resetForm(){
+ document.getElementById("matchForm").reset();
+ document.getElementById("matchId").value="";
+ document.getElementById("formTitle").textContent="Yeni Maç / Yayın Ekle";
+ document.getElementById("saveButton").textContent="MAÇI KAYDET";
+ document.getElementById("cancelEdit").classList.add("hidden");
+ formMessage.textContent="";
+}
+
+function editMatch(id){
+ const m=matches.find(x=>String(x.id)===String(id));
+ if(!m)return;
+
+ document.getElementById("matchId").value=m.id;
+ document.getElementById("title").value=m.title||"";
+ document.getElementById("homeTeam").value=m.home_team||"";
+ document.getElementById("awayTeam").value=m.away_team||"";
+ document.getElementById("homeLogo").value=m.home_logo||"";
+ document.getElementById("awayLogo").value=m.away_logo||"";
+ document.getElementById("streamUrl").value=m.stream_url||"";
+ document.getElementById("matchStatus").value=m.status||"upcoming";
+
+ const date=new Date(m.match_time);
+ const localDate=new Date(date.getTime()-date.getTimezoneOffset()*60000);
+ document.getElementById("matchTime").value=localDate.toISOString().slice(0,16);
+
+ document.getElementById("formTitle").textContent="Maçı Düzenle";
+ document.getElementById("saveButton").textContent="DEĞİŞİKLİKLERİ KAYDET";
+ document.getElementById("cancelEdit").classList.remove("hidden");
+ document.getElementById("matchFormPanel").scrollIntoView({behavior:"smooth"});
+}
+
+document.getElementById("cancelEdit").addEventListener("click",resetForm);
+
+document.getElementById("matchForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+
+ const id=document.getElementById("matchId").value;
+ const body={
+  title:document.getElementById("title").value.trim(),
+  home_team:document.getElementById("homeTeam").value.trim(),
+  away_team:document.getElementById("awayTeam").value.trim(),
+  home_logo:document.getElementById("homeLogo").value.trim(),
+  away_logo:document.getElementById("awayLogo").value.trim(),
+  match_time:new Date(document.getElementById("matchTime").value).toISOString(),
+  stream_url:document.getElementById("streamUrl").value.trim(),
+  status:document.getElementById("matchStatus").value
+ };
+
+ if(body.status==="live"&&!body.stream_url){
+  formMessage.textContent="Canlı yayın için önce kamerayı başlat veya yayın adresi gir.";
+  formMessage.className="error";
+  return;
  }
-}
 
-function closePlayer(hide=true){
- if(hls){hls.destroy();hls=null;}
- video.pause();
- video.removeAttribute("src");
- video.load();
- vdoFrame.src="about:blank";
- vdoFrame.style.display="none";
- video.style.display="block";
- if(hide)modal.classList.remove("open");
-}
+ formMessage.textContent="Kaydediliyor...";
+ formMessage.className="";
 
-adminArea.addEventListener("click",e=>{
- const btn=e.target.closest("[data-play-id]");
- if(btn)openPlayer(btn.dataset.playId);
+ try{
+  const response=await fetch("/api/matches",{
+   method:id?"PUT":"POST",
+   headers:{"Content-Type":"application/json"},
+   credentials:"same-origin",
+   body:JSON.stringify(id?{...body,id}:body)
+  });
+
+  const data=await response.json();
+
+  if(response.status===401){
+   showLogin();
+   throw new Error("Yönetici oturumu bulunamadı. Tekrar giriş yap.");
+  }
+
+  if(!response.ok)throw new Error(data.error||"Kayıt başarısız.");
+
+  formMessage.textContent=data.message||"İşlem başarılı.";
+  formMessage.className="success";
+  resetForm();
+  await loadMatches();
+
+ }catch(error){
+  formMessage.textContent=error.message;
+  formMessage.className="error";
+ }
 });
 
-document.getElementById("closePlayer").addEventListener("click",()=>closePlayer());
-modal.addEventListener("click",e=>{
- if(e.target===modal)closePlayer();
+document.getElementById("matchesList").addEventListener("click",async e=>{
+ const editButton=e.target.closest("[data-edit]");
+ const deleteButton=e.target.closest("[data-delete]");
+
+ if(editButton){
+  editMatch(editButton.dataset.edit);
+  return;
+ }
+
+ if(deleteButton){
+  const id=deleteButton.dataset.delete;
+  if(!confirm("Bu maçı silmek istediğine emin misin?"))return;
+
+  try{
+   const response=await fetch("/api/matches",{
+    method:"DELETE",
+    headers:{"Content-Type":"application/json"},
+    credentials:"same-origin",
+    body:JSON.stringify({id})
+   });
+
+   const data=await response.json();
+   if(response.status===401){
+    showLogin();
+    throw new Error("Tekrar giriş yapmalısın.");
+   }
+   if(!response.ok)throw new Error(data.error||"Silinemedi.");
+
+   await loadMatches();
+
+  }catch(error){
+   alert(error.message);
+  }
+ }
 });
 
-loadAutomatic();
-loadAdminMatches();
-
-setInterval(loadAutomatic,300000);
-setInterval(loadAdminMatches,30000);
+if(sessionStorage.getItem("alpsport_admin_ui")==="1"){
+ showAdmin();
+}
 </script>
 </body>
-</html>
+                                               </html>
