@@ -75,7 +75,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
   <div class="panel">
    <h2>Telefon Kamerasıyla Canlı Yayın</h2>
-   <p class="note">Bir maç seç. Sistem sana özel yayın bağlantıları oluştursun ve telefonunun kamera yayın sayfasını açsın.</p>
+   <p class="note">Bir maç seç. Sistem o maç için özel yayın bağlantısı oluştursun ve telefonunun kamera sayfasını açsın.</p>
 
    <label>Yayın yapılacak maçı seç</label>
    <select id="broadcastMatch">
@@ -95,7 +95,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
      <button type="button" id="copyViewerButton">İZLEYİCİ LİNKİNİ KOPYALA</button>
      <button type="button" class="secondary" id="openPublisherButton">KAMERA SAYFASINI AÇ</button>
     </div>
-    <p class="warning">Kamera sayfası açıldığında VDO.Ninja ekranında kamera ve mikrofon izinlerini verip CONNECT / BAĞLAN düğmesine bas. Yayın o zaman başlar.</p>
+    <p class="warning">Kamera sayfası açıldığında kamera ve mikrofon izinlerini ver. Ardından VDO.Ninja ekranındaki CONNECT / BAĞLAN düğmesine bas. Yayın bu işlemden sonra başlar.</p>
+    <p class="warning">Yayın bağlantısını yalnızca kendi kameranla yayın yapmak için kullan. Yönetici kamera bağlantısını kimseyle paylaşma.</p>
    </div>
   </div>
 
@@ -394,7 +395,6 @@ async function startBroadcast(){
   return;
  }
 
- // Yeni sekme kullanıcı tıklaması sırasında açılır.
  const cameraWindow=window.open("about:blank","_blank");
 
  if(!cameraWindow){
@@ -404,22 +404,21 @@ async function startBroadcast(){
  }
 
  button.disabled=true;
- message.textContent="Güvenli yayın bağlantıları hazırlanıyor...";
+ message.textContent="Yayın bağlantısı hazırlanıyor...";
  message.className="note";
 
  try{
-  const streamId="alp"+randomCode(12);
-  const publisherToken=randomCode(16);
-  const viewerToken=randomCode(16);
+  // Uzun, rastgele ve tahmin edilmesi zor yayın kimliği.
+  const streamId="ALP"+randomCode(24);
 
-  const publisher=new URL("https://vdo.ninja/alpha/");
+  // Yayıncı ve izleyici aynı gizli yayın kimliğini kullanır.
+  // Audience anahtarı kullanılmaz.
+  const publisher=new URL("https://vdo.ninja/");
   publisher.searchParams.set("push",streamId);
-  publisher.searchParams.set("audience",publisherToken);
   publisher.searchParams.set("webcam","");
 
-  const viewer=new URL("https://vdo.ninja/alpha/");
+  const viewer=new URL("https://vdo.ninja/");
   viewer.searchParams.set("view",streamId);
-  viewer.searchParams.set("audience",viewerToken);
 
   const publisherUrl=publisher.toString();
   const viewerUrl=viewer.toString();
@@ -449,7 +448,7 @@ async function startBroadcast(){
 
   cameraWindow.location.href=publisherUrl;
 
-  message.textContent="Yayın bağlantısı maça kaydedildi. Kamera sayfası yeni sekmede açıldı.";
+  message.textContent="İzleyici bağlantısı maça kaydedildi. Kamera sayfası açıldı.";
   message.className="note success";
 
   await loadMatches();
