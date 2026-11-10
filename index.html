@@ -9,10 +9,15 @@
 <meta name="description" content="AlpSport Türkiye futbol ligleri, canlı skorlar, maç sonuçları ve canlı yayınlar.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://alpsportt.pages.dev/">
+
+<!-- GOOGLE SITE VERIFICATION -->
+<meta name="google-site-verification" content="0txtNmWYUTWq0oQGuT3ZM-h72jprs3xmvS81yCnNOKg" />
+
 <meta property="og:site_name" content="AlpSport">
 <meta property="og:title" content="AlpSport Türkiye Futbol Merkezi">
 <meta property="og:description" content="Canlı skorlar, maç sonuçları ve futbol yayınları.">
 <meta property="og:url" content="https://alpsportt.pages.dev/">
+
 <style>
 *{box-sizing:border-box}
 html{background:#07111f}
@@ -37,21 +42,10 @@ nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
 .player-card{background:#102137;border:1px solid #29425d;border-radius:12px;padding:14px}
 .player-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
 .player-heading strong{font-size:17px}
-.player-frame-wrap{
- width:100%;aspect-ratio:16/9;background:#000;border-radius:9px;
- overflow:hidden;position:relative;isolation:isolate
-}
+.player-frame-wrap{width:100%;aspect-ratio:16/9;background:#000;border-radius:9px;overflow:hidden;position:relative;isolation:isolate}
 #liveFrame{width:100%;height:100%;min-width:100%;min-height:100%;border:0;display:block;background:#000}
-.player-frame-wrap:fullscreen,.player-frame-wrap:-webkit-full-screen{
- width:100vw!important;height:100vh!important;height:100dvh!important;
- max-width:none!important;max-height:none!important;aspect-ratio:auto!important;
- margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
- background:#000!important;overflow:hidden!important
-}
-.player-frame-wrap:fullscreen #liveFrame,.player-frame-wrap:-webkit-full-screen #liveFrame{
- width:100vw!important;height:100vh!important;height:100dvh!important;
- min-width:100vw!important;min-height:100vh!important;min-height:100dvh!important
-}
+.player-frame-wrap:fullscreen,.player-frame-wrap:-webkit-full-screen{width:100vw!important;height:100vh!important;height:100dvh!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#000!important;overflow:hidden!important}
+.player-frame-wrap:fullscreen #liveFrame,.player-frame-wrap:-webkit-full-screen #liveFrame{width:100vw!important;height:100vh!important;height:100dvh!important;min-width:100vw!important;min-height:100vh!important;min-height:100dvh!important}
 .player-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#aab9ca;padding:20px}
 .player-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .player-controls button{flex:1;min-width:130px}
@@ -74,34 +68,20 @@ button{border:0;border-radius:7px;padding:12px;background:#b8ff35;color:#07111f;
 .empty{background:#102137;border:1px dashed #38516b;padding:22px;border-radius:10px;text-align:center;color:#aab9ca;grid-column:1/-1}
 .info{color:#8499af;font-size:12px;line-height:1.5;margin-top:12px}
 footer{margin-top:50px;padding:28px 5%;background:#0c1b2e;color:#8295aa;text-align:center;font-size:13px}
-
-/* CANLI YAYIN REKLAM KATMANI */
-.live-ad-overlay{
- position:absolute;z-index:10;inset:0;display:flex;
- align-items:center;justify-content:center;padding:5%;
- background:rgba(0,0,0,.82)
-}
+.live-ad-overlay{position:absolute;z-index:10;inset:0;display:flex;align-items:center;justify-content:center;padding:5%;background:rgba(0,0,0,.82)}
 .live-ad-overlay[hidden]{display:none!important}
-.live-ad-overlay a{
- display:flex;width:100%;height:100%;align-items:center;justify-content:center
-}
-.live-ad-overlay img{
- display:block;max-width:100%;max-height:100%;width:100%;height:100%;
- object-fit:contain
-}
-.live-ad-label{
- position:absolute;top:10px;right:10px;background:#b8ff35;color:#07111f;
- padding:7px 11px;border-radius:5px;font-size:12px;font-weight:bold
-}
+.live-ad-overlay a{display:flex;width:100%;height:100%;align-items:center;justify-content:center}
+.live-ad-overlay img{display:block;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain}
+.live-ad-label{position:absolute;top:10px;right:10px;background:#b8ff35;color:#07111f;padding:7px 11px;border-radius:5px;font-size:12px;font-weight:bold}
 @media(max-width:600px){
- header{padding:14px 4%}
- .logo{font-size:22px}
- nav a{font-size:11px;margin-left:8px}
- .hero{padding:30px 5%}
- .container{width:94%;margin:18px auto}
- .section-title h2{font-size:19px}
- .ad-slot{height:90px}
- .player-card{padding:9px}
+header{padding:14px 4%}
+.logo{font-size:22px}
+nav a{font-size:11px;margin-left:8px}
+.hero{padding:30px 5%}
+.container{width:94%;margin:18px auto}
+.section-title h2{font-size:19px}
+.ad-slot{height:90px}
+.player-card{padding:9px}
 }
 </style>
 </head>
@@ -378,7 +358,6 @@ function hideLiveAd(){
 
 function showLiveAd(ad){
  hideLiveAd();
-
  const overlay=document.createElement("div");
  overlay.id="liveAdOverlay";
  overlay.className="live-ad-overlay";
@@ -409,7 +388,6 @@ function scheduleNextLiveAd(delay){
 
 async function runLiveAdCycle(){
  if(!selectedMatch)return;
-
  liveAdList=await loadLiveAds();
  if(!selectedMatch)return;
 
