@@ -1,13 +1,31 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07111f">
 <title>AlpSport | Canlı Spor Merkezi</title>
+<meta name="description" content="AlpSport: Türkiye futbol ligleri, canlı skorlar, maç sonuçları, fikstür ve canlı yayınlar.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://alpsportt.pages.dev/">
+<meta property="og:site_name" content="AlpSport">
+<meta property="og:title" content="AlpSport Türkiye Futbol Merkezi">
+<meta property="og:description" content="Canlı skorlar, maç sonuçları ve futbol yayınları.">
+<meta property="og:url" content="https://alpsportt.pages.dev/">
+<script type="application/ld+json">
+{
+ "@context":"https://schema.org",
+ "@type":"WebSite",
+ "name":"AlpSport",
+ "alternateName":"AlpSport Türkiye",
+ "url":"https://alpsportt.pages.dev/"
+}
+</script>
 
 <style>
 *{box-sizing:border-box}
+html{background:#07111f}
 body{margin:0;background:#07111f;color:#fff;font-family:Arial,sans-serif}
 header{background:#0c1b2e;padding:17px 5%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #20334a}
 .logo{font-size:27px;font-weight:900;color:#b8ff35}
@@ -29,8 +47,59 @@ nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
 .player-card{background:#102137;border:1px solid #29425d;border-radius:12px;padding:14px}
 .player-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
 .player-heading strong{font-size:17px}
-.player-frame-wrap{width:100%;aspect-ratio:16/9;background:#000;border-radius:9px;overflow:hidden;position:relative}
-#liveFrame{width:100%;height:100%;border:0;display:block;background:#000}
+
+/* NORMAL VIDEO PLAYER */
+.player-frame-wrap{
+ width:100%;
+ aspect-ratio:16/9;
+ background:#000;
+ border-radius:9px;
+ overflow:hidden;
+ position:relative;
+ isolation:isolate;
+}
+#liveFrame{
+ width:100%;
+ height:100%;
+ min-width:100%;
+ min-height:100%;
+ border:0;
+ display:block;
+ background:#000;
+}
+
+/* FULL SCREEN PLAYER */
+.player-frame-wrap:fullscreen,
+.player-frame-wrap:-webkit-full-screen{
+ width:100vw!important;
+ height:100vh!important;
+ height:100dvh!important;
+ max-width:none!important;
+ max-height:none!important;
+ aspect-ratio:auto!important;
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+ border-radius:0!important;
+ background:#000!important;
+ overflow:hidden!important;
+}
+.player-frame-wrap:fullscreen #liveFrame,
+.player-frame-wrap:-webkit-full-screen #liveFrame{
+ width:100vw!important;
+ height:100vh!important;
+ height:100dvh!important;
+ min-width:100vw!important;
+ min-height:100vh!important;
+ min-height:100dvh!important;
+ border:0!important;
+ border-radius:0!important;
+}
+.player-frame-wrap:fullscreen .player-empty,
+.player-frame-wrap:-webkit-full-screen .player-empty{
+ width:100%;
+ height:100%;
+}
 .player-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#aab9ca;padding:20px}
 .player-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .player-controls button{flex:1;min-width:130px}
@@ -67,7 +136,6 @@ footer{margin-top:50px;padding:28px 5%;background:#0c1b2e;color:#8295aa;text-ali
 </head>
 
 <body>
-
 <header>
  <div class="logo">ALP<span>SPORT</span></div>
  <nav>
@@ -83,7 +151,6 @@ footer{margin-top:50px;padding:28px 5%;background:#0c1b2e;color:#8295aa;text-ali
 </section>
 
 <main class="container">
-
 <section class="section" id="canli">
  <div class="section-title">
   <h2>● ALPSPORT CANLI YAYIN</h2>
@@ -122,10 +189,7 @@ footer{margin-top:50px;padding:28px 5%;background:#0c1b2e;color:#8295aa;text-ali
     <strong id="totalViews">0</strong>
    </div>
   </div>
-
-  <p class="info">
-   İzleyici sayıları, yayın sayfasını açan tarayıcı oturumlarına göre hesaplanır.
-  </p>
+  <p class="info">İzleyici sayıları, yayın sayfasını açan tarayıcı oturumlarına göre hesaplanır.</p>
  </div>
 
  <div class="ad-list" id="bottomAds">
@@ -157,14 +221,11 @@ footer{margin-top:50px;padding:28px 5%;background:#0c1b2e;color:#8295aa;text-ali
 </section>
 
 <section class="section">
- <div class="section-title">
-  <h2>AlpSport Yayınları</h2>
- </div>
+ <div class="section-title"><h2>AlpSport Yayınları</h2></div>
  <div class="matches" id="adminMatches">
   <div class="empty">Yayınlar yükleniyor...</div>
  </div>
 </section>
-
 </main>
 
 <footer>
@@ -187,8 +248,7 @@ let viewerId="";
 
 function safe(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",
-  '"':"&quot;","'":"&#039;"
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
  }[c]));
 }
 
@@ -201,54 +261,27 @@ function dateText(value){
  if(!value)return "Tarih belirtilmedi";
  const d=new Date(value);
  if(Number.isNaN(d.getTime()))return safe(value);
- return d.toLocaleString("tr-TR",{
-  day:"2-digit",
-  month:"2-digit",
-  year:"numeric",
-  hour:"2-digit",
-  minute:"2-digit"
- });
+ return d.toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
 }
-
-/* OTOMATİK FUTBOL MAÇLARI */
 
 function automaticCard(m){
  const status=String(m.status||"SCHEDULED");
-
- const live=[
-  "IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT"
- ].includes(status);
-
+ const live=["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT"].includes(status);
  const finished=status==="FINISHED";
  const score=m.score?.fullTime;
-
- const scoreText=score&&(score.home!==null||score.away!==null)
-  ?`${score.home??"-"} - ${score.away??"-"}`
-  :"VS";
+ const scoreText=score&&(score.home!==null||score.away!==null)?`${score.home??"-"} - ${score.away??"-"}`:"VS";
 
  return `
  <article class="match">
   <div class="match-top">
    <span>${safe(m.competition?.name||"Futbol")}</span>
-   <span class="${live?"status-live":""}">
-    ${live?"● CANLI":finished?"TAMAMLANDI":"YAKLAŞAN"}
-   </span>
+   <span class="${live?"status-live":""}">${live?"● CANLI":finished?"TAMAMLANDI":"YAKLAŞAN"}</span>
   </div>
-
   <div class="teams">
-   <div class="team">
-    ${imageHTML(m.homeTeam?.crest)}
-    ${safe(m.homeTeam?.name||"Ev sahibi")}
-   </div>
-
+   <div class="team">${imageHTML(m.homeTeam?.crest)}${safe(m.homeTeam?.name||"Ev sahibi")}</div>
    <div class="vs">${safe(scoreText)}</div>
-
-   <div class="team">
-    ${imageHTML(m.awayTeam?.crest)}
-    ${safe(m.awayTeam?.name||"Deplasman")}
-   </div>
+   <div class="team">${imageHTML(m.awayTeam?.crest)}${safe(m.awayTeam?.name||"Deplasman")}</div>
   </div>
-
   <div class="match-date">${dateText(m.utcDate)}</div>
  </article>`;
 }
@@ -257,88 +290,46 @@ async function loadAutomatic(){
  try{
   const r=await fetch("/api/football",{cache:"no-store"});
   const data=await r.json();
-
   if(!r.ok)throw new Error();
-
   const matches=Array.isArray(data.matches)?data.matches:[];
-
-  const live=matches.filter(m=>
-   ["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT"]
-   .includes(String(m.status))
-  );
-
-  const upcoming=matches.filter(m=>
-   ![
-    "IN_PLAY","PAUSED","LIVE","EXTRA_TIME",
-    "PENALTY_SHOOTOUT","FINISHED","CANCELLED"
-   ].includes(String(m.status))
-  );
-
-  liveArea.innerHTML=live.length
-   ?live.map(automaticCard).join("")
-   :'<div class="empty">Şu anda veri sağlayıcısında canlı maç görünmüyor.</div>';
-
-  upcomingArea.innerHTML=upcoming.length
-   ?upcoming.map(automaticCard).join("")
-   :'<div class="empty">Yaklaşan maç bulunamadı.</div>';
-
+  const live=matches.filter(m=>["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT"].includes(String(m.status)));
+  const upcoming=matches.filter(m=>!["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT","FINISHED","CANCELLED"].includes(String(m.status)));
+  liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda veri sağlayıcısında canlı maç görünmüyor.</div>';
+  upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan maç bulunamadı.</div>';
  }catch(error){
   liveArea.innerHTML='<div class="empty">Canlı maç verisi şu anda alınamıyor.</div>';
   upcomingArea.innerHTML='<div class="empty">Fikstür verisi şu anda alınamıyor.</div>';
  }
 }
 
-/* YÖNETİCİ TARAFINDAN EKLENEN MAÇLAR */
-
 function adminCard(m){
  const live=m.status==="live";
-
  return `
  <article class="match">
   <div class="match-top">
    <span>${safe(m.title||"AlpSport Yayını")}</span>
-   <span class="${live?"status-live":""}">
-    ${live?"● CANLI":m.status==="finished"?"TAMAMLANDI":"YAKLAŞAN"}
-   </span>
+   <span class="${live?"status-live":""}">${live?"● CANLI":m.status==="finished"?"TAMAMLANDI":"YAKLAŞAN"}</span>
   </div>
-
   <div class="teams">
-   <div class="team">
-    ${imageHTML(m.home_logo)}
-    ${safe(m.home_team)}
-   </div>
-
+   <div class="team">${imageHTML(m.home_logo)}${safe(m.home_team)}</div>
    <div class="vs">VS</div>
-
-   <div class="team">
-    ${imageHTML(m.away_logo)}
-    ${safe(m.away_team)}
-   </div>
+   <div class="team">${imageHTML(m.away_logo)}${safe(m.away_team)}</div>
   </div>
-
   <div class="match-date">${dateText(m.match_time)}</div>
-
-  <button class="watch"
-   data-play-id="${safe(m.id)}"
-   ${live&&m.stream_url?"":"disabled"}>
+  <button class="watch" data-play-id="${safe(m.id)}" ${live&&m.stream_url?"":"disabled"}>
    ${live&&m.stream_url?"BU YAYINI İZLE":"YAYIN HAZIR DEĞİL"}
   </button>
  </article>`;
 }
 
-/* İZLEYİCİ TAKİBİ */
-
 function makeViewerId(){
  try{
   let id=sessionStorage.getItem("alpsport_viewer_id");
-
   if(!id){
    id="viewer_"+crypto.randomUUID().replace(/-/g,"");
    sessionStorage.setItem("alpsport_viewer_id",id);
   }
-
   return id;
-
  }catch(error){
   return "viewer_"+crypto.randomUUID().replace(/-/g,"");
  }
@@ -347,7 +338,6 @@ function makeViewerId(){
 function stopTracking(){
  if(heartbeatTimer)clearInterval(heartbeatTimer);
  if(statsTimer)clearInterval(statsTimer);
-
  heartbeatTimer=null;
  statsTimer=null;
 }
@@ -355,12 +345,7 @@ function stopTracking(){
 function showNoLive(){
  stopTracking();
  selectedMatch=null;
-
- playerWrap.innerHTML=`
-  <div class="player-empty">
-   Şu anda AlpSport üzerinden başlatılmış canlı yayın bulunmuyor.
-  </div>`;
-
+ playerWrap.innerHTML='<div class="player-empty">Şu anda AlpSport üzerinden başlatılmış canlı yayın bulunmuyor.</div>';
  document.getElementById("playerTitle").textContent="Canlı yayın bekleniyor";
  document.getElementById("playerStatus").textContent="● BEKLENİYOR";
  document.getElementById("activeViewers").textContent="0";
@@ -369,104 +354,65 @@ function showNoLive(){
 
 async function sendHeartbeat(){
  if(!selectedMatch||document.hidden)return;
-
  try{
   await fetch("/api/viewers",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    match_id:selectedMatch.id,
-    viewer_id:viewerId
-   })
+   body:JSON.stringify({match_id:selectedMatch.id,viewer_id:viewerId})
   });
  }catch(error){}
 }
 
 async function loadViewerStats(){
  if(!selectedMatch)return;
-
  try{
-  const r=await fetch(
-   "/api/viewers?match_id="+encodeURIComponent(selectedMatch.id),
-   {cache:"no-store"}
-  );
-
+  const r=await fetch("/api/viewers?match_id="+encodeURIComponent(selectedMatch.id),{cache:"no-store"});
   if(!r.ok)return;
-
   const data=await r.json();
-
-  document.getElementById("activeViewers").textContent=
-   Number(data.active_viewers||0).toLocaleString("tr-TR");
-
-  document.getElementById("totalViews").textContent=
-   Number(data.total_views||0).toLocaleString("tr-TR");
-
+  document.getElementById("activeViewers").textContent=Number(data.active_viewers||0).toLocaleString("tr-TR");
+  document.getElementById("totalViews").textContent=Number(data.total_views||0).toLocaleString("tr-TR");
  }catch(error){}
 }
 
-/* CANLI YAYINI OYNAT */
-
 function playMatch(m){
  if(!m||!m.stream_url)return;
-
  stopTracking();
-
  selectedMatch=m;
  viewerId=makeViewerId();
-
- document.getElementById("playerTitle").textContent=
-  m.title||"AlpSport Canlı Yayın";
-
+ document.getElementById("playerTitle").textContent=m.title||"AlpSport Canlı Yayın";
  document.getElementById("playerStatus").textContent="● CANLI";
 
  playerWrap.innerHTML=`
-  <iframe
-   id="liveFrame"
+  <iframe id="liveFrame"
    src="${safe(m.stream_url)}"
    allow="autoplay; fullscreen; picture-in-picture; camera; microphone; encrypted-media"
    allowfullscreen
+   webkitallowfullscreen
    title="AlpSport canlı yayın">
   </iframe>`;
 
  sendHeartbeat();
  loadViewerStats();
-
  heartbeatTimer=setInterval(sendHeartbeat,25000);
  statsTimer=setInterval(loadViewerStats,20000);
 }
 
-/* YAYIN LİSTESİNİ YÜKLE */
-
+/* YAYIN LİSTESİ */
 async function loadAdminMatches(){
  try{
   const r=await fetch("/api/matches",{cache:"no-store"});
-
   if(!r.ok)throw new Error();
-
   const data=await r.json();
-
   adminMatches=Array.isArray(data.matches)?data.matches:[];
-
-  const live=adminMatches.filter(m=>
-   m.status==="live"&&m.stream_url
-  );
-
-  const visibleMatches=adminMatches.filter(m=>
-   m.status!=="finished"
-  );
-
-  adminArea.innerHTML=visibleMatches.length
-   ?visibleMatches.map(adminCard).join("")
-   :'<div class="empty">Henüz yönetici tarafından yayın eklenmedi.</div>';
+  const live=adminMatches.filter(m=>m.status==="live"&&m.stream_url);
+  const visibleMatches=adminMatches.filter(m=>m.status!=="finished");
+  adminArea.innerHTML=visibleMatches.length?visibleMatches.map(adminCard).join(""):'<div class="empty">Henüz yönetici tarafından yayın eklenmedi.</div>';
 
   if(!selectedMatch){
    if(live.length)playMatch(live[0]);
    else showNoLive();
   }else{
-   const stillLive=live.find(m=>
-    String(m.id)===String(selectedMatch.id)
-   );
-
+   const stillLive=live.find(m=>String(m.id)===String(selectedMatch.id));
    if(!stillLive){
     if(live.length)playMatch(live[0]);
     else showNoLive();
@@ -474,39 +420,35 @@ async function loadAdminMatches(){
     selectedMatch=stillLive;
    }
   }
-
  }catch(error){
-  adminArea.innerHTML=
-   '<div class="empty">Yayın listesi şu anda alınamıyor.</div>';
+  adminArea.innerHTML='<div class="empty">Yayın listesi şu anda alınamıyor.</div>';
  }
 }
 
 adminArea.addEventListener("click",event=>{
  const btn=event.target.closest("[data-play-id]");
  if(!btn)return;
-
- const match=adminMatches.find(m=>
-  String(m.id)===String(btn.dataset.playId)
- );
-
+ const match=adminMatches.find(m=>String(m.id)===String(btn.dataset.playId));
  if(match)playMatch(match);
 });
 
-/* TAM EKRAN */
-
+/* TELEFONDA TAM EKRAN */
 document.getElementById("fullscreenButton").addEventListener("click",async()=>{
  const frame=document.getElementById("liveFrame");
-
  if(!frame){
   alert("Şu anda açık bir canlı yayın yok.");
   return;
  }
 
  try{
-  if(frame.requestFullscreen){
-   await frame.requestFullscreen();
-  }else if(frame.webkitRequestFullscreen){
-   frame.webkitRequestFullscreen();
+  // Tam ekranı iframe yerine dış oynatıcı alanında aç.
+  if(playerWrap.requestFullscreen){
+   await playerWrap.requestFullscreen();
+  }else if(playerWrap.webkitRequestFullscreen){
+   playerWrap.webkitRequestFullscreen();
+  }else{
+   alert("Bu tarayıcı tam ekran özelliğini desteklemiyor.");
+   return;
   }
 
   try{
@@ -514,13 +456,16 @@ document.getElementById("fullscreenButton").addEventListener("click",async()=>{
     await screen.orientation.lock("landscape");
    }
   }catch(error){}
-
  }catch(error){
   alert("Tam ekran için telefon tarayıcısının izin vermesi gerekiyor.");
  }
 });
 
-/* SAYFA GÖRÜNÜRLÜĞÜ */
+document.addEventListener("fullscreenchange",()=>{
+ if(!document.fullscreenElement){
+  try{screen.orientation.unlock();}catch(error){}
+ }
+});
 
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden&&selectedMatch){
@@ -530,71 +475,31 @@ document.addEventListener("visibilitychange",()=>{
 });
 
 /* REKLAMLAR */
-
 async function loadAds(){
  try{
   const r=await fetch("/api/ads",{cache:"no-store"});
-
   if(!r.ok)return;
-
   const data=await r.json();
   const ads=Array.isArray(data.ads)?data.ads:[];
-
   const render=(slot,number)=>{
-   const ad=ads.find(x=>
-    x.slot===slot&&Number(x.active)===1&&x.image_url
-   );
-
-   if(!ad){
-    return `
-     <div class="ad-slot">
-      <div class="ad-placeholder">Reklam alanı ${number}</div>
-     </div>`;
-   }
-
-   const image=`
-    <img src="${safe(ad.image_url)}"
-     alt="Reklam"
-     loading="lazy">`;
-
-   if(ad.target_url){
-    return `
-     <a class="ad-slot"
-      href="${safe(ad.target_url)}"
-      target="_blank"
-      rel="noopener noreferrer">
-      ${image}
-     </a>`;
-   }
-
-   return `<div class="ad-slot">${image}</div>`;
+   const ad=ads.find(x=>x.slot===slot&&Number(x.active)===1&&x.image_url);
+   if(!ad)return `<div class="ad-slot"><div class="ad-placeholder">Reklam alanı ${number}</div></div>`;
+   const img=`<img src="${safe(ad.image_url)}" alt="Reklam" loading="lazy">`;
+   if(ad.target_url)return `<a class="ad-slot" href="${safe(ad.target_url)}" target="_blank" rel="noopener noreferrer">${img}</a>`;
+   return `<div class="ad-slot">${img}</div>`;
   };
-
-  document.getElementById("topAds").innerHTML=[
-   render("top1",1),
-   render("top2",2),
-   render("top3",3)
-  ].join("");
-
-  document.getElementById("bottomAds").innerHTML=[
-   render("bottom1",4),
-   render("bottom2",5),
-   render("bottom3",6)
-  ].join("");
-
+  document.getElementById("topAds").innerHTML=[render("top1",1),render("top2",2),render("top3",3)].join("");
+  document.getElementById("bottomAds").innerHTML=[render("bottom1",4),render("bottom2",5),render("bottom3",6)].join("");
  }catch(error){}
 }
 
-/* İLK YÜKLEME VE OTOMATİK YENİLEME */
-
+/* İLK YÜKLEME */
 loadAutomatic();
 loadAdminMatches();
 loadAds();
-
 setInterval(loadAutomatic,300000);
 setInterval(loadAdminMatches,15000);
 setInterval(loadAds,60000);
-
 </script>
 </body>
- </html>
+</html>
