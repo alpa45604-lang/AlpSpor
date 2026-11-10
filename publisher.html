@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>AlpSport Yayın Kamerası</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#07111f;color:white;font-family:Arial,sans-serif}
+main{max-width:900px;margin:auto}
+h1{color:#b8ff35;font-size:23px}
+p{color:#c5d1df;line-height:1.5}
+iframe{width:100%;height:75vh;min-height:320px;border:1px solid #38516b;border-radius:10px;background:#000}
+button{width:100%;margin-top:14px;padding:14px;border:0;border-radius:8px;background:#d83c3c;color:white;font-weight:bold;font-size:16px}
+#message{margin-top:12px;color:#b8ff35}
+</style>
+</head>
+<body>
+<main>
+<h1>ALPSPORT YAYIN KAMERASI</h1>
+<p>Yayın devam etsin istiyorsan bu sekmeyi kapatma. Kamera ve mikrofon izni istenirse izin ver.</p>
+<iframe id="camera" allow="camera; microphone; autoplay; fullscreen; picture-in-picture" allowfullscreen title="AlpSport kamera"></iframe>
+<button id="stop">YAYINI DURDUR</button>
+<div id="message"></div>
+</main>
+<script>
+const params=new URLSearchParams(location.search);
+const room=params.get("room");
+const frame=document.getElementById("camera");
+const message=document.getElementById("message");
+
+if(!room||!/^[a-zA-Z0-9_-]{8,100}$/.test(room)){
+ message.textContent="Yayın kodu geçersiz. Yönetim panelinden yeniden başlat.";
+}else{
+ frame.src="https://vdo.ninja/?push="+encodeURIComponent(room)+"&cleanoutput&autostart=1";
+}
+
+function stop(){
+ frame.src="about:blank";
+ message.textContent="Yayın durduruldu.";
+}
+
+document.getElementById("stop").addEventListener("click",stop);
+
+window.addEventListener("storage",event=>{
+ if(event.key==="alpsport_stop_camera")stop();
+});
+</script>
+</body>
+</html>
