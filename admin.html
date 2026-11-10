@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -35,12 +36,21 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
 .match-actions button{flex:1}
 .notice{font-size:12px;color:#aab9ca}
 #message{margin-top:12px;font-size:14px}
+.ad-item{background:#0b192a;border:1px solid #29425d;border-radius:9px;padding:15px;margin:12px 0}
+.ad-item h3{font-size:15px;margin:0 0 10px;color:#b8ff35}
+.ad-active{display:flex;align-items:center;gap:9px;margin:0 0 8px}
+.ad-active input{width:20px;height:20px;margin:0}
+.ad-active label{font-size:14px}
+.ad-preview{width:100%;height:90px;object-fit:contain;background:#07111f;border:1px dashed #38516b;border-radius:7px;margin:5px 0 12px}
+.stats{background:#142b40;border-radius:7px;padding:10px;margin-top:12px;display:flex;gap:15px;flex-wrap:wrap}
+.stats strong{color:#b8ff35}
 @media(max-width:600px){
  header{padding:15px 4%}
  .logo{font-size:21px}
  .container{width:94%;margin:16px auto}
  .panel{padding:15px}
  #cameraFrame{height:280px}
+ .stats{gap:10px}
 }
 </style>
 </head>
@@ -73,7 +83,7 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
 
  <section class="panel">
   <h1>AlpSport Yönetim Paneli</h1>
-  <p>Maçlarını ve canlı yayınlarını buradan yönetebilirsin.</p>
+  <p>Maçlarını, canlı yayınlarını, reklamlarını ve izlenme bilgilerini buradan yönetebilirsin.</p>
  </section>
 
  <section class="panel">
@@ -97,8 +107,20 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
 
   <button id="copyViewerUrl" class="secondary" style="width:100%">İZLEYİCİ ADRESİNİ KOPYALA</button>
 
-  <p class="notice">Bu adres maç ekleme formundaki yayın adresine otomatik aktarılır. Yayın adresini başkalarıyla paylaşma; ziyaretçiler AlpSport üzerinden izler.</p>
+  <p class="notice">Bu adres maç ekleme formundaki yayın adresine otomatik aktarılır. Ziyaretçiler yayını AlpSport üzerinden izler.</p>
   <div id="cameraMessage"></div>
+ </section>
+
+ <section class="panel">
+  <h2>Reklam Yönetimi</h2>
+  <p>Ana sayfada oynatıcının üstünde 3, altında 3 reklam alanı bulunur. Her reklam için görsel adresi ve tıklanınca açılacak bağlantıyı girebilirsin.</p>
+
+  <div id="adsList">
+   Reklam alanları yükleniyor...
+  </div>
+
+  <button id="saveAds" class="primary">6 REKLAMI KAYDET</button>
+  <div id="adsMessage"></div>
  </section>
 
  <section class="panel" id="matchFormPanel">
@@ -144,6 +166,7 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
 
  <section class="panel">
   <h2>Eklenen Maçlar ve Yayınlar</h2>
+  <p>Canlı maçların izleyici bilgileri otomatik olarak yenilenir.</p>
   <div id="matchesList">Maçlar yükleniyor...</div>
  </section>
 
@@ -160,6 +183,7 @@ const cameraFrame=document.getElementById("cameraFrame");
 
 let matches=[];
 let roomId="";
+let statsTimer=null;
 
 function safe(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
@@ -174,6 +198,8 @@ function showAdmin(){
  document.getElementById("logoutButton").classList.remove("hidden");
  sessionStorage.setItem("alpsport_admin_ui","1");
  loadMatches();
+ loadAds();
+ startStatsRefresh();
 }
 
 function showLogin(){
@@ -181,6 +207,7 @@ function showLogin(){
  loginPanel.classList.remove("hidden");
  document.getElementById("logoutButton").classList.add("hidden");
  sessionStorage.removeItem("alpsport_admin_ui");
+ stopStatsRefresh();
 }
 
 document.getElementById("loginForm").addEventListener("submit",async e=>{
@@ -274,6 +301,129 @@ document.getElementById("copyViewerUrl").addEventListener("click",async()=>{
  }
 });
 
+const adSlots=[
+ {id:"top1",name:"Oynatıcının üstündeki 1. reklam"},
+ {id:"top2",name:"Oynatıcının üstündeki 2. reklam"},
+ {id:"top3",name:"Oynatıcının üstündeki 3. reklam"},
+ {id:"bottom1",name:"Oynatıcının altındaki 1. reklam"},
+ {id:"bottom2",name:"Oynatıcının altındaki 2. reklam"},
+ {id:"bottom3",name:"Oynatıcının altındaki 3. reklam"}
+];
+
+function renderAdFields(){
+ document.getElementById("adsList").innerHTML=adSlots.map(ad=>`
+  <div class="ad-item">
+   <h3>${ad.name}</h3>
+
+   <label>Reklam görselinin adresi</label>
+   <input id="ad-${ad.id}-image" type="url" placeholder="https://gorsel-adresi.com/reklam.jpg">
+
+   <img id="ad-${ad.id}-preview" class="ad-preview" alt="Reklam ön izlemesi">
+
+   <label>Reklama tıklanınca açılacak adres</label>
+   <input id="ad-${ad.id}-link" type="url" placeholder="https://site-adresi.com">
+
+   <div class="ad-active">
+    <input id="ad-${ad.id}-active" type="checkbox">
+    <label for="ad-${ad.id}-active">Bu reklamı ziyaretçilere göster</label>
+   </div>
+  </div>
+ `).join("");
+
+ adSlots.forEach(ad=>{
+  const input=document.getElementById(`ad-${ad.id}-image`);
+  const preview=document.getElementById(`ad-${ad.id}-preview`);
+
+  input.addEventListener("input",()=>{
+   preview.src=input.value.trim();
+   preview.style.display=input.value.trim()?"block":"none";
+  });
+
+  preview.style.display="none";
+ });
+}
+
+async function loadAds(){
+ const message=document.getElementById("adsMessage");
+ renderAdFields();
+ message.textContent="Reklam bilgileri yükleniyor...";
+ message.className="";
+
+ try{
+  const response=await fetch("/api/ads",{
+   cache:"no-store",
+   credentials:"same-origin"
+  });
+
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error||"Reklam bilgileri alınamadı.");
+
+  const ads=Array.isArray(data.ads)?data.ads:[];
+
+  adSlots.forEach(slot=>{
+   const ad=ads.find(x=>x.slot===slot.id);
+   if(!ad)return;
+
+   const image=document.getElementById(`ad-${slot.id}-image`);
+   const link=document.getElementById(`ad-${slot.id}-link`);
+   const active=document.getElementById(`ad-${slot.id}-active`);
+   const preview=document.getElementById(`ad-${slot.id}-preview`);
+
+   image.value=ad.image_url||"";
+   link.value=ad.target_url||"";
+   active.checked=Number(ad.active)===1;
+
+   if(image.value){
+    preview.src=image.value;
+    preview.style.display="block";
+   }
+  });
+
+  message.textContent="Reklam alanları hazır.";
+  message.className="success";
+
+ }catch(error){
+  message.textContent=error.message+" Veritabanı tablolarını bir sonraki adımda oluşturacağız.";
+  message.className="error";
+ }
+}
+
+document.getElementById("saveAds").addEventListener("click",async()=>{
+ const message=document.getElementById("adsMessage");
+ const ads=adSlots.map(slot=>({
+  slot:slot.id,
+  image_url:document.getElementById(`ad-${slot.id}-image`).value.trim(),
+  target_url:document.getElementById(`ad-${slot.id}-link`).value.trim(),
+  active:document.getElementById(`ad-${slot.id}-active`).checked
+ }));
+
+ message.textContent="Reklamlar kaydediliyor...";
+ message.className="";
+
+ try{
+  const response=await fetch("/api/ads",{
+   method:"PUT",
+   headers:{"Content-Type":"application/json"},
+   credentials:"same-origin",
+   body:JSON.stringify({ads})
+  });
+
+  const data=await response.json();
+  if(response.status===401){
+   showLogin();
+   throw new Error("Yönetici girişi gerekli. Tekrar giriş yap.");
+  }
+  if(!response.ok)throw new Error(data.error||"Reklamlar kaydedilemedi.");
+
+  message.textContent="Altı reklam alanı başarıyla kaydedildi.";
+  message.className="success";
+
+ }catch(error){
+  message.textContent=error.message;
+  message.className="error";
+ }
+});
+
 async function loadMatches(){
  const list=document.getElementById("matchesList");
  list.textContent="Maçlar yükleniyor...";
@@ -305,7 +455,7 @@ function renderMatches(){
  const list=document.getElementById("matchesList");
 
  if(!matches.length){
-  list.innerHTML='<p>Henüz maç veya yayın eklenmemiş.</p>';
+  list.innerHTML="<p>Henüz maç veya yayın eklenmemiş.</p>";
   return;
  }
 
@@ -317,12 +467,74 @@ function renderMatches(){
    </div>
    <div>${safe(m.home_team)} - ${safe(m.away_team)}</div>
    <small>${safe(new Date(m.match_time).toLocaleString("tr-TR"))}</small>
+
+   ${m.status==="live"?`
+    <div class="stats" data-match-stats="${safe(m.id)}">
+     <span>Aktif izleyici: <strong>Yükleniyor...</strong></span>
+     <span>Toplam oturum: <strong>Yükleniyor...</strong></span>
+    </div>
+   `:""}
+
    <div class="match-actions">
     <button class="secondary" data-edit="${safe(m.id)}">DÜZENLE</button>
     <button class="danger" data-delete="${safe(m.id)}">SİL</button>
    </div>
   </div>
  `).join("");
+
+ loadAllMatchStats();
+}
+
+async function loadAllMatchStats(){
+ const liveMatches=matches.filter(m=>m.status==="live");
+
+ await Promise.all(liveMatches.map(async m=>{
+  try{
+   const response=await fetch(
+    "/api/viewers?match_id="+encodeURIComponent(m.id),
+    {cache:"no-store"}
+   );
+
+   const data=await response.json();
+   if(!response.ok)throw new Error("Bilgi alınamadı");
+
+   const element=Array.from(
+    document.querySelectorAll("[data-match-stats]")
+   ).find(el=>el.dataset.matchStats===String(m.id));
+
+   if(!element)return;
+
+   element.innerHTML=`
+    <span>Aktif izleyici: <strong>${Number(data.active_viewers||0)}</strong></span>
+    <span>Toplam oturum: <strong>${Number(data.total_views||0)}</strong></span>
+   `;
+
+  }catch(error){
+   const element=Array.from(
+    document.querySelectorAll("[data-match-stats]")
+   ).find(el=>el.dataset.matchStats===String(m.id));
+
+   if(element){
+    element.innerHTML="<span>İzlenme bilgisi şu anda alınamıyor.</span>";
+   }
+  }
+ }));
+}
+
+function startStatsRefresh(){
+ stopStatsRefresh();
+ statsTimer=setInterval(()=>{
+  if(!adminPanel.classList.contains("hidden")){
+   loadAllMatchStats();
+  }
+ },20000);
+}
+
+function stopStatsRefresh(){
+ if(statsTimer){
+  clearInterval(statsTimer);
+  statsTimer=null;
+ }
 }
 
 function resetForm(){
@@ -452,4 +664,4 @@ if(sessionStorage.getItem("alpsport_admin_ui")==="1"){
 }
 </script>
 </body>
-                                               </html>
+</html>
