@@ -30,7 +30,17 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .error{color:#ff7777}
 .success{color:#b8ff35}
 .top-actions{display:flex;gap:8px;align-items:center}
-@media(max-width:600px){.grid{grid-template-columns:1fr}header{padding:15px 4%}.logo{font-size:21px}main{width:94%}.panel{padding:16px}}
+.broadcast-link{background:#091727;border:1px solid #40546b;padding:12px;border-radius:8px;overflow-wrap:anywhere;font-size:13px;line-height:1.6;margin:12px 0}
+.broadcast-actions{display:flex;gap:8px;flex-wrap:wrap}
+.broadcast-actions button{flex:1;min-width:150px}
+.warning{color:#ffd27b;font-size:13px;line-height:1.6}
+@media(max-width:600px){
+ .grid{grid-template-columns:1fr}
+ header{padding:15px 4%}
+ .logo{font-size:21px}
+ main{width:94%}
+ .panel{padding:16px}
+}
 </style>
 </head>
 <body>
@@ -47,14 +57,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
  <section id="loginSection" class="panel">
   <h1>Yönetici Girişi</h1>
   <p class="note">AlpSport yönetim paneline yalnızca yetkili hesapla giriş yapabilirsin.</p>
-
   <form id="loginForm">
    <label>Kullanıcı adı</label>
    <input id="username" autocomplete="username" required>
-
    <label>Şifre</label>
    <input id="password" type="password" autocomplete="current-password" required>
-
    <button type="submit" id="loginButton">GİRİŞ YAP</button>
    <p id="loginMessage" class="note"></p>
   </form>
@@ -63,12 +70,37 @@ button:disabled{opacity:.5;cursor:not-allowed}
  <section id="adminSection" class="hidden">
   <div class="panel">
    <h1>AlpSport Yönetim Paneli</h1>
-   <p class="note">Maçlarını ve yayınlarını buradan yönetebilirsin.</p>
+   <p class="note">Maçlarını ve canlı yayınlarını buradan yönetebilirsin.</p>
+  </div>
+
+  <div class="panel">
+   <h2>Telefon Kamerasıyla Canlı Yayın</h2>
+   <p class="note">Bir maç seç. Sistem sana özel yayın bağlantıları oluştursun ve telefonunun kamera yayın sayfasını açsın.</p>
+
+   <label>Yayın yapılacak maçı seç</label>
+   <select id="broadcastMatch">
+    <option value="">Önce maçları yükle</option>
+   </select>
+
+   <button type="button" id="startBroadcastButton" style="width:100%">
+    KAMERAYI AÇ VE YAYINI HAZIRLA
+   </button>
+
+   <p id="broadcastMessage" class="note"></p>
+
+   <div id="broadcastResult" class="hidden">
+    <label>İzleyici bağlantısı</label>
+    <div class="broadcast-link" id="viewerLinkText"></div>
+    <div class="broadcast-actions">
+     <button type="button" id="copyViewerButton">İZLEYİCİ LİNKİNİ KOPYALA</button>
+     <button type="button" class="secondary" id="openPublisherButton">KAMERA SAYFASINI AÇ</button>
+    </div>
+    <p class="warning">Kamera sayfası açıldığında VDO.Ninja ekranında kamera ve mikrofon izinlerini verip CONNECT / BAĞLAN düğmesine bas. Yayın o zaman başlar.</p>
+   </div>
   </div>
 
   <div class="panel">
    <h2 id="formTitle">Yeni Maç Ekle</h2>
-
    <form id="matchForm">
     <input type="hidden" id="matchId">
 
@@ -100,8 +132,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
     <label>Maç tarihi ve saati</label>
     <input id="matchTime" type="datetime-local" required>
 
-    <label>Yayın adresi (HLS / M3U8)</label>
-    <input id="streamUrl" type="url" placeholder="https://.../playlist.m3u8">
+    <label>Yayın adresi (HLS / M3U8 veya VDO.Ninja)</label>
+    <input id="streamUrl" type="url" placeholder="https://...">
 
     <label>Maç durumu</label>
     <select id="status">
@@ -132,6 +164,8 @@ const logoutButton=document.getElementById("logoutButton");
 const matchList=document.getElementById("matchList");
 
 let matches=[];
+let currentPublisherUrl="";
+let currentViewerUrl="";
 
 async function api(url,options={}){
  const response=await fetch(url,{
@@ -209,6 +243,15 @@ function resetForm(){
  formMessage.textContent="";
 }
 
+function localDateTime(value){
+ if(!value)return "";
+ const date=new Date(value);
+ if(Number.isNaN(date.getTime()))return "";
+ const offset=date.getTimezoneOffset();
+ const local=new Date(date.getTime()-offset*60000);
+ return local.toISOString().slice(0,16);
+}
+
 document.getElementById("matchForm").addEventListener("submit",async event=>{
  event.preventDefault();
 
@@ -227,6 +270,7 @@ document.getElementById("matchForm").addEventListener("submit",async event=>{
  const button=document.getElementById("saveButton");
  button.disabled=true;
  formMessage.textContent="Kaydediliyor...";
+ formMessage.className="note";
 
  try{
   await api("/api/matches",{
@@ -253,6 +297,7 @@ async function loadMatches(){
 
   if(!matches.length){
    matchList.textContent="Henüz maç eklenmedi.";
+   updateBroadcastSelect();
    return;
   }
 
@@ -267,8 +312,28 @@ async function loadMatches(){
     </div>
    </div>
   `).join("");
+
+  updateBroadcastSelect();
  }catch(error){
   matchList.textContent=error.message;
+ }
+}
+
+function updateBroadcastSelect(){
+ const select=document.getElementById("broadcastMatch");
+ const previous=select.value;
+
+ select.innerHTML='<option value="">Yayın yapılacak maçı seç</option>';
+
+ matches.filter(m=>m.status!=="finished").forEach(match=>{
+  const option=document.createElement("option");
+  option.value=String(match.id);
+  option.textContent=(match.title||"Maç")+" — "+(match.home_team||"")+" / "+(match.away_team||"");
+  select.appendChild(option);
+ });
+
+ if(matches.some(m=>String(m.id)===previous)){
+  select.value=previous;
  }
 }
 
@@ -288,7 +353,7 @@ function editMatch(id){
  document.getElementById("awayTeam").value=match.away_team||"";
  document.getElementById("homeLogo").value=match.home_logo||"";
  document.getElementById("awayLogo").value=match.away_logo||"";
- document.getElementById("matchTime").value=match.match_time||"";
+ document.getElementById("matchTime").value=localDateTime(match.match_time);
  document.getElementById("streamUrl").value=match.stream_url||"";
  document.getElementById("status").value=match.status||"upcoming";
 
@@ -310,6 +375,111 @@ async function deleteMatch(id){
   alert(error.message);
  }
 }
+
+function randomCode(length=24){
+ const bytes=new Uint8Array(length);
+ crypto.getRandomValues(bytes);
+ return Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+async function startBroadcast(){
+ const message=document.getElementById("broadcastMessage");
+ const button=document.getElementById("startBroadcastButton");
+ const selectedId=document.getElementById("broadcastMatch").value;
+ const match=matches.find(m=>String(m.id)===String(selectedId));
+
+ if(!match){
+  message.textContent="Önce yayın yapılacak maçı seç.";
+  message.className="note error";
+  return;
+ }
+
+ // Yeni sekme kullanıcı tıklaması sırasında açılır.
+ const cameraWindow=window.open("about:blank","_blank");
+
+ if(!cameraWindow){
+  message.textContent="Tarayıcı yeni pencereyi engelledi. Açılır pencerelere izin verip tekrar dene.";
+  message.className="note error";
+  return;
+ }
+
+ button.disabled=true;
+ message.textContent="Güvenli yayın bağlantıları hazırlanıyor...";
+ message.className="note";
+
+ try{
+  const streamId="alp"+randomCode(12);
+  const publisherToken=randomCode(16);
+  const viewerToken=randomCode(16);
+
+  const publisher=new URL("https://vdo.ninja/alpha/");
+  publisher.searchParams.set("push",streamId);
+  publisher.searchParams.set("audience",publisherToken);
+  publisher.searchParams.set("webcam","");
+
+  const viewer=new URL("https://vdo.ninja/alpha/");
+  viewer.searchParams.set("view",streamId);
+  viewer.searchParams.set("audience",viewerToken);
+
+  const publisherUrl=publisher.toString();
+  const viewerUrl=viewer.toString();
+
+  const payload={
+   id:match.id,
+   title:match.title,
+   home_team:match.home_team,
+   away_team:match.away_team,
+   home_logo:match.home_logo||"",
+   away_logo:match.away_logo||"",
+   match_time:match.match_time,
+   stream_url:viewerUrl,
+   status:"live"
+  };
+
+  await api("/api/matches",{
+   method:"PUT",
+   body:JSON.stringify(payload)
+  });
+
+  currentPublisherUrl=publisherUrl;
+  currentViewerUrl=viewerUrl;
+
+  document.getElementById("viewerLinkText").textContent=viewerUrl;
+  document.getElementById("broadcastResult").classList.remove("hidden");
+
+  cameraWindow.location.href=publisherUrl;
+
+  message.textContent="Yayın bağlantısı maça kaydedildi. Kamera sayfası yeni sekmede açıldı.";
+  message.className="note success";
+
+  await loadMatches();
+
+ }catch(error){
+  cameraWindow.close();
+  message.textContent="Yayın hazırlanamadı: "+error.message;
+  message.className="note error";
+ }finally{
+  button.disabled=false;
+ }
+}
+
+document.getElementById("startBroadcastButton").addEventListener("click",startBroadcast);
+
+document.getElementById("copyViewerButton").addEventListener("click",async()=>{
+ if(!currentViewerUrl)return;
+ try{
+  await navigator.clipboard.writeText(currentViewerUrl);
+  document.getElementById("broadcastMessage").textContent="İzleyici bağlantısı kopyalandı.";
+  document.getElementById("broadcastMessage").className="note success";
+ }catch(error){
+  document.getElementById("broadcastMessage").textContent="Kopyalama yapılamadı. Bağlantıya basılı tutarak kopyalayabilirsin.";
+  document.getElementById("broadcastMessage").className="note error";
+ }
+});
+
+document.getElementById("openPublisherButton").addEventListener("click",()=>{
+ if(currentPublisherUrl)window.open(currentPublisherUrl,"_blank");
+});
 
 checkSession();
 </script>
