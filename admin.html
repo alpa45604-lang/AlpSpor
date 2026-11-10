@@ -5,338 +5,226 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
-<title>AlpSport | Yönetici Paneli</title>
+<title>AlpSport Yönetim</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#07111f;color:#fff;font-family:Arial,sans-serif}
-header{padding:18px 6%;background:#0c1b2e;border-bottom:1px solid #263b52;display:flex;justify-content:space-between;align-items:center}
+body{margin:0;background:#07111f;color:white;font-family:Arial,sans-serif}
+header{padding:17px 5%;background:#0c1b2e;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #263b52}
 .logo{font-size:25px;font-weight:900;color:#b8ff35}
 .logo span{color:white}
-main{width:92%;max-width:1000px;margin:30px auto}
-h1{font-size:27px}
-h2{font-size:20px}
-.panel{background:#102137;border:1px solid #263d55;border-radius:12px;padding:22px;margin-bottom:22px}
+main{width:94%;max-width:1000px;margin:25px auto}
+.panel{background:#102137;border:1px solid #263d55;border-radius:12px;padding:20px;margin-bottom:20px}
+h1{font-size:25px}h2{font-size:20px}
 input,select{width:100%;padding:13px;margin:7px 0 15px;border:1px solid #40546b;border-radius:7px;background:#091727;color:white;font-size:15px}
 label{font-size:13px;color:#bdcadd}
-button{padding:12px 17px;border:0;border-radius:7px;background:#b8ff35;color:#07111f;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.5;cursor:not-allowed}
+button{padding:12px 16px;border:0;border-radius:7px;background:#b8ff35;color:#07111f;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
 .secondary{background:#30465e;color:white}
 .danger{background:#d93636;color:white}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.match{padding:16px;background:#091727;border:1px solid #30465e;border-radius:9px;margin-top:12px}
-.match-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .hidden{display:none!important}
-.note{font-size:13px;color:#9fb1c5;line-height:1.5}
-.error{color:#ff7777}
-.success{color:#b8ff35}
-.top-actions{display:flex;gap:8px;align-items:center}
-.broadcast-link{background:#091727;border:1px solid #40546b;padding:12px;border-radius:8px;overflow-wrap:anywhere;font-size:13px;line-height:1.6;margin:12px 0}
-.broadcast-actions{display:flex;gap:8px;flex-wrap:wrap}
-.broadcast-actions button{flex:1;min-width:150px}
+.note{font-size:13px;color:#9fb1c5;line-height:1.6}
+.error{color:#ff7777}.success{color:#b8ff35}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.match{padding:15px;background:#091727;border:1px solid #30465e;border-radius:9px;margin-top:12px}
+.match-buttons{display:flex;gap:8px;margin-top:12px}
+.camera-frame{width:100%;aspect-ratio:16/9;background:#000;border:1px solid #40546b;border-radius:10px}
+.camera-frame iframe{width:100%;height:100%;border:0;border-radius:10px}
+.broadcast-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.broadcast-actions button{flex:1}
 .warning{color:#ffd27b;font-size:13px;line-height:1.6}
-@media(max-width:600px){
- .grid{grid-template-columns:1fr}
- header{padding:15px 4%}
- .logo{font-size:21px}
- main{width:94%}
- .panel{padding:16px}
-}
+@media(max-width:600px){.grid{grid-template-columns:1fr}header{padding:14px 4%}main{width:95%}.panel{padding:15px}}
 </style>
 </head>
 <body>
-
 <header>
  <div class="logo">ALP<span>SPORT</span></div>
- <div class="top-actions">
-  <span style="font-size:13px">Yönetim</span>
-  <button class="secondary hidden" id="logoutButton" onclick="logout()">ÇIKIŞ</button>
- </div>
+ <button class="secondary hidden" id="logoutButton" onclick="logout()">ÇIKIŞ</button>
 </header>
 
 <main>
- <section id="loginSection" class="panel">
-  <h1>Yönetici Girişi</h1>
-  <p class="note">AlpSport yönetim paneline yalnızca yetkili hesapla giriş yapabilirsin.</p>
-  <form id="loginForm">
-   <label>Kullanıcı adı</label>
-   <input id="username" autocomplete="username" required>
-   <label>Şifre</label>
-   <input id="password" type="password" autocomplete="current-password" required>
-   <button type="submit" id="loginButton">GİRİŞ YAP</button>
-   <p id="loginMessage" class="note"></p>
-  </form>
- </section>
+<section id="loginSection" class="panel">
+ <h1>Yönetici Girişi</h1>
+ <form id="loginForm">
+  <label>Kullanıcı adı</label>
+  <input id="username" autocomplete="username" required>
+  <label>Şifre</label>
+  <input id="password" type="password" autocomplete="current-password" required>
+  <button id="loginButton">GİRİŞ YAP</button>
+  <p id="loginMessage" class="note"></p>
+ </form>
+</section>
 
- <section id="adminSection" class="hidden">
-  <div class="panel">
-   <h1>AlpSport Yönetim Paneli</h1>
-   <p class="note">Maçlarını ve canlı yayınlarını buradan yönetebilirsin.</p>
+<section id="adminSection" class="hidden">
+ <div class="panel">
+  <h1>AlpSport Yönetim Paneli</h1>
+  <p class="note">Maçlarını ve canlı yayınlarını buradan yönetebilirsin.</p>
+ </div>
+
+ <div class="panel">
+  <h2>Telefon Kamerasıyla Canlı Yayın</h2>
+  <p class="note">Maçını seç. Kamera bu panelin içinde açılacak.</p>
+  <label>Yayın yapılacak maç</label>
+  <select id="broadcastMatch">
+   <option value="">Maç seç</option>
+  </select>
+
+  <div class="broadcast-actions">
+   <button id="startBroadcastButton">KAMERAYI AÇ VE YAYINI BAŞLAT</button>
+   <button id="stopBroadcastButton" class="danger" disabled>YAYINI BİTİR</button>
   </div>
+  <p id="broadcastMessage" class="note">Yayın başlatmak için bir maç seç.</p>
 
-  <div class="panel">
-   <h2>Telefon Kamerasıyla Canlı Yayın</h2>
-   <p class="note">Bir maç seç. Sistem o maç için özel yayın bağlantısı oluştursun ve telefonunun kamera sayfasını açsın.</p>
-
-   <label>Yayın yapılacak maçı seç</label>
-   <select id="broadcastMatch">
-    <option value="">Önce maçları yükle</option>
-   </select>
-
-   <button type="button" id="startBroadcastButton" style="width:100%">
-    KAMERAYI AÇ VE YAYINI HAZIRLA
-   </button>
-
-   <p id="broadcastMessage" class="note"></p>
-
-   <div id="broadcastResult" class="hidden">
-    <label>İzleyici bağlantısı</label>
-    <div class="broadcast-link" id="viewerLinkText"></div>
-    <div class="broadcast-actions">
-     <button type="button" id="copyViewerButton">İZLEYİCİ LİNKİNİ KOPYALA</button>
-     <button type="button" class="secondary" id="openPublisherButton">KAMERA SAYFASINI AÇ</button>
-    </div>
-    <p class="warning">Kamera sayfası açıldığında kamera ve mikrofon izinlerini ver. Ardından VDO.Ninja ekranındaki CONNECT / BAĞLAN düğmesine bas. Yayın bu işlemden sonra başlar.</p>
-    <p class="warning">Yayın bağlantısını yalnızca kendi kameranla yayın yapmak için kullan. Yönetici kamera bağlantısını kimseyle paylaşma.</p>
+  <div id="cameraArea" class="hidden">
+   <h3>AlpSport Kamera Yayını</h3>
+   <div class="camera-frame">
+    <iframe id="publisherFrame"
+     title="AlpSport kamera yayını"
+     allow="camera; microphone; autoplay; fullscreen; picture-in-picture"
+     allowfullscreen></iframe>
    </div>
+   <p class="warning">Tarayıcı kamera ve mikrofon izni isterse izin ver. VDO.Ninja ekranındaki CONNECT / BAĞLAN düğmesine bas. Kamera görüntüsü bu alanın içinde açılır.</p>
+   <label>İzleyici bağlantısı</label>
+   <input id="viewerLink" readonly>
+   <button type="button" id="copyViewerButton" class="secondary">İZLEYİCİ LİNKİNİ KOPYALA</button>
   </div>
+ </div>
 
-  <div class="panel">
-   <h2 id="formTitle">Yeni Maç Ekle</h2>
-   <form id="matchForm">
-    <input type="hidden" id="matchId">
+ <div class="panel">
+  <h2 id="formTitle">Yeni Maç Ekle</h2>
+  <form id="matchForm">
+   <input type="hidden" id="matchId">
+   <label>Maç başlığı</label>
+   <input id="title" placeholder="Örnek: Süper Lig" required>
+   <div class="grid">
+    <div><label>Ev sahibi takım</label><input id="homeTeam" required></div>
+    <div><label>Deplasman takımı</label><input id="awayTeam" required></div>
+   </div>
+   <div class="grid">
+    <div><label>Ev sahibi logo adresi</label><input id="homeLogo" type="url"></div>
+    <div><label>Deplasman logo adresi</label><input id="awayLogo" type="url"></div>
+   </div>
+   <label>Maç tarihi ve saati</label>
+   <input id="matchTime" type="datetime-local" required>
+   <label>Yayın adresi (HLS / M3U8 veya VDO.Ninja)</label>
+   <input id="streamUrl" type="url" placeholder="https://...">
+   <label>Maç durumu</label>
+   <select id="status">
+    <option value="upcoming">Yaklaşan maç</option>
+    <option value="live">Canlı yayın</option>
+    <option value="finished">Tamamlandı</option>
+   </select>
+   <button id="saveButton">MAÇI KAYDET</button>
+   <button type="button" class="secondary" onclick="resetForm()">TEMİZLE</button>
+   <p id="formMessage" class="note"></p>
+  </form>
+ </div>
 
-    <label>Maç başlığı</label>
-    <input id="title" placeholder="Örnek: Süper Lig" required>
-
-    <div class="grid">
-     <div>
-      <label>Ev sahibi takım</label>
-      <input id="homeTeam" placeholder="Galatasaray" required>
-     </div>
-     <div>
-      <label>Deplasman takımı</label>
-      <input id="awayTeam" placeholder="Fenerbahçe" required>
-     </div>
-    </div>
-
-    <div class="grid">
-     <div>
-      <label>Ev sahibi logo adresi (isteğe bağlı)</label>
-      <input id="homeLogo" type="url" placeholder="https://...">
-     </div>
-     <div>
-      <label>Deplasman logo adresi (isteğe bağlı)</label>
-      <input id="awayLogo" type="url" placeholder="https://...">
-     </div>
-    </div>
-
-    <label>Maç tarihi ve saati</label>
-    <input id="matchTime" type="datetime-local" required>
-
-    <label>Yayın adresi (HLS / M3U8 veya VDO.Ninja)</label>
-    <input id="streamUrl" type="url" placeholder="https://...">
-
-    <label>Maç durumu</label>
-    <select id="status">
-     <option value="upcoming">Yaklaşan maç</option>
-     <option value="live">Canlı yayın</option>
-     <option value="finished">Tamamlandı</option>
-    </select>
-
-    <button type="submit" id="saveButton">MAÇI KAYDET</button>
-    <button type="button" class="secondary" onclick="resetForm()">TEMİZLE</button>
-    <p id="formMessage" class="note"></p>
-   </form>
-  </div>
-
-  <div class="panel">
-   <h2>Eklenen Maçlar</h2>
-   <div id="matchList">Maçlar yükleniyor...</div>
-  </div>
- </section>
+ <div class="panel">
+  <h2>Eklenen Maçlar</h2>
+  <div id="matchList">Maçlar yükleniyor...</div>
+ </div>
+</section>
 </main>
 
 <script>
-const loginSection=document.getElementById("loginSection");
-const adminSection=document.getElementById("adminSection");
-const loginMessage=document.getElementById("loginMessage");
-const formMessage=document.getElementById("formMessage");
-const logoutButton=document.getElementById("logoutButton");
-const matchList=document.getElementById("matchList");
-
+const $=id=>document.getElementById(id);
 let matches=[];
-let currentPublisherUrl="";
-let currentViewerUrl="";
+let activeMatchId=null;
+let activePublisherUrl="";
+let activeViewerUrl="";
 
 async function api(url,options={}){
  const response=await fetch(url,{
   ...options,
   credentials:"same-origin",
-  headers:{
-   "Content-Type":"application/json",
-   ...(options.headers||{})
-  }
+  headers:{"Content-Type":"application/json",...(options.headers||{})}
  });
  const data=await response.json().catch(()=>({}));
  if(!response.ok)throw new Error(data.error||data.message||"İşlem başarısız.");
  return data;
 }
 
-async function checkSession(){
- try{
-  await api("/api/me");
-  showAdmin();
- }catch(error){
-  showLogin();
- }
-}
-
 function showLogin(){
- loginSection.classList.remove("hidden");
- adminSection.classList.add("hidden");
- logoutButton.classList.add("hidden");
+ $("loginSection").classList.remove("hidden");
+ $("adminSection").classList.add("hidden");
+ $("logoutButton").classList.add("hidden");
 }
-
 function showAdmin(){
- loginSection.classList.add("hidden");
- adminSection.classList.remove("hidden");
- logoutButton.classList.remove("hidden");
+ $("loginSection").classList.add("hidden");
+ $("adminSection").classList.remove("hidden");
+ $("logoutButton").classList.remove("hidden");
  loadMatches();
 }
+async function checkSession(){
+ try{await api("/api/me");showAdmin();}
+ catch(e){showLogin();}
+}
 
-document.getElementById("loginForm").addEventListener("submit",async event=>{
- event.preventDefault();
- const button=document.getElementById("loginButton");
- button.disabled=true;
- loginMessage.textContent="Giriş kontrol ediliyor...";
- loginMessage.className="note";
-
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ $("loginButton").disabled=true;
+ $("loginMessage").textContent="Giriş kontrol ediliyor...";
  try{
-  await api("/api/login",{
-   method:"POST",
-   body:JSON.stringify({
-    username:document.getElementById("username").value,
-    password:document.getElementById("password").value
-   })
-  });
-  document.getElementById("password").value="";
+  await api("/api/login",{method:"POST",body:JSON.stringify({
+   username:$("username").value,password:$("password").value
+  })});
+  $("password").value="";
   showAdmin();
- }catch(error){
-  loginMessage.textContent=error.message;
-  loginMessage.className="note error";
- }finally{
-  button.disabled=false;
- }
+ }catch(err){
+  $("loginMessage").textContent=err.message;
+  $("loginMessage").className="note error";
+ }finally{$("loginButton").disabled=false;}
 });
 
 async function logout(){
- try{
-  await api("/api/logout",{method:"POST",body:"{}"});
- }catch(error){}
+ try{await api("/api/logout",{method:"POST",body:"{}"});}catch(e){}
+ stopCameraFrame();
  showLogin();
 }
 
 function resetForm(){
- document.getElementById("matchForm").reset();
- document.getElementById("matchId").value="";
- document.getElementById("formTitle").textContent="Yeni Maç Ekle";
- document.getElementById("saveButton").textContent="MAÇI KAYDET";
- formMessage.textContent="";
+ $("matchForm").reset();
+ $("matchId").value="";
+ $("formTitle").textContent="Yeni Maç Ekle";
+ $("saveButton").textContent="MAÇI KAYDET";
+ $("formMessage").textContent="";
 }
-
 function localDateTime(value){
  if(!value)return "";
- const date=new Date(value);
- if(Number.isNaN(date.getTime()))return "";
- const offset=date.getTimezoneOffset();
- const local=new Date(date.getTime()-offset*60000);
- return local.toISOString().slice(0,16);
+ const d=new Date(value);
+ if(Number.isNaN(d.getTime()))return "";
+ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
 }
 
-document.getElementById("matchForm").addEventListener("submit",async event=>{
- event.preventDefault();
-
- const id=document.getElementById("matchId").value;
+$("matchForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const id=$("matchId").value;
  const payload={
-  title:document.getElementById("title").value.trim(),
-  home_team:document.getElementById("homeTeam").value.trim(),
-  away_team:document.getElementById("awayTeam").value.trim(),
-  home_logo:document.getElementById("homeLogo").value.trim(),
-  away_logo:document.getElementById("awayLogo").value.trim(),
-  match_time:document.getElementById("matchTime").value,
-  stream_url:document.getElementById("streamUrl").value.trim(),
-  status:document.getElementById("status").value
+  title:$("title").value.trim(),
+  home_team:$("homeTeam").value.trim(),
+  away_team:$("awayTeam").value.trim(),
+  home_logo:$("homeLogo").value.trim(),
+  away_logo:$("awayLogo").value.trim(),
+  match_time:$("matchTime").value,
+  stream_url:$("streamUrl").value.trim(),
+  status:$("status").value
  };
-
- const button=document.getElementById("saveButton");
- button.disabled=true;
- formMessage.textContent="Kaydediliyor...";
- formMessage.className="note";
-
+ $("saveButton").disabled=true;
+ $("formMessage").textContent="Kaydediliyor...";
  try{
   await api("/api/matches",{
    method:id?"PUT":"POST",
    body:JSON.stringify(id?{id,...payload}:payload)
   });
-  formMessage.textContent="Maç başarıyla kaydedildi.";
-  formMessage.className="note success";
+  $("formMessage").textContent="Maç kaydedildi.";
+  $("formMessage").className="note success";
   resetForm();
   await loadMatches();
- }catch(error){
-  formMessage.textContent=error.message;
-  formMessage.className="note error";
- }finally{
-  button.disabled=false;
- }
+ }catch(err){
+  $("formMessage").textContent=err.message;
+  $("formMessage").className="note error";
+ }finally{$("saveButton").disabled=false;}
 });
-
-async function loadMatches(){
- matchList.textContent="Maçlar yükleniyor...";
- try{
-  const data=await api("/api/matches");
-  matches=Array.isArray(data)?data:(data.matches||[]);
-
-  if(!matches.length){
-   matchList.textContent="Henüz maç eklenmedi.";
-   updateBroadcastSelect();
-   return;
-  }
-
-  matchList.innerHTML=matches.map(match=>`
-   <div class="match">
-    <strong>${escapeHTML(match.title)}</strong>
-    <p>${escapeHTML(match.home_team)} - ${escapeHTML(match.away_team)}</p>
-    <p class="note">Durum: ${escapeHTML(match.status)}</p>
-    <div class="match-buttons">
-     <button class="secondary" onclick="editMatch('${escapeHTML(match.id)}')">DÜZENLE</button>
-     <button class="danger" onclick="deleteMatch('${escapeHTML(match.id)}')">SİL</button>
-    </div>
-   </div>
-  `).join("");
-
-  updateBroadcastSelect();
- }catch(error){
-  matchList.textContent=error.message;
- }
-}
-
-function updateBroadcastSelect(){
- const select=document.getElementById("broadcastMatch");
- const previous=select.value;
-
- select.innerHTML='<option value="">Yayın yapılacak maçı seç</option>';
-
- matches.filter(m=>m.status!=="finished").forEach(match=>{
-  const option=document.createElement("option");
-  option.value=String(match.id);
-  option.textContent=(match.title||"Maç")+" — "+(match.home_team||"")+" / "+(match.away_team||"");
-  select.appendChild(option);
- });
-
- if(matches.some(m=>String(m.id)===previous)){
-  select.value=previous;
- }
-}
 
 function escapeHTML(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
@@ -344,140 +232,183 @@ function escapeHTML(value){
  }[c]));
 }
 
+async function loadMatches(){
+ try{
+  const data=await api("/api/matches");
+  matches=Array.isArray(data)?data:(data.matches||[]);
+  $("matchList").innerHTML=matches.length?matches.map(m=>`
+   <div class="match">
+    <strong>${escapeHTML(m.title)}</strong>
+    <p>${escapeHTML(m.home_team)} - ${escapeHTML(m.away_team)}</p>
+    <p class="note">Durum: ${escapeHTML(m.status)}</p>
+    <div class="match-buttons">
+     <button class="secondary" onclick="editMatch('${escapeHTML(m.id)}')">DÜZENLE</button>
+     <button class="danger" onclick="deleteMatch('${escapeHTML(m.id)}')">SİL</button>
+    </div>
+   </div>`).join(""):'Henüz maç eklenmedi.';
+  updateBroadcastSelect();
+ }catch(err){$("matchList").textContent=err.message;}
+}
+
+function updateBroadcastSelect(){
+ const select=$("broadcastMatch");
+ const old=select.value;
+ select.innerHTML='<option value="">Yayın yapılacak maçı seç</option>';
+ matches.filter(m=>m.status!=="finished").forEach(m=>{
+  const option=document.createElement("option");
+  option.value=m.id;
+  option.textContent=`${m.title} — ${m.home_team} / ${m.away_team}`;
+  select.appendChild(option);
+ });
+ if(matches.some(m=>String(m.id)===old))select.value=old;
+}
+
 function editMatch(id){
- const match=matches.find(item=>String(item.id)===String(id));
- if(!match)return;
-
- document.getElementById("matchId").value=match.id;
- document.getElementById("title").value=match.title||"";
- document.getElementById("homeTeam").value=match.home_team||"";
- document.getElementById("awayTeam").value=match.away_team||"";
- document.getElementById("homeLogo").value=match.home_logo||"";
- document.getElementById("awayLogo").value=match.away_logo||"";
- document.getElementById("matchTime").value=localDateTime(match.match_time);
- document.getElementById("streamUrl").value=match.stream_url||"";
- document.getElementById("status").value=match.status||"upcoming";
-
- document.getElementById("formTitle").textContent="Maçı Düzenle";
- document.getElementById("saveButton").textContent="DEĞİŞİKLİKLERİ KAYDET";
+ const m=matches.find(x=>String(x.id)===String(id));
+ if(!m)return;
+ $("matchId").value=m.id;
+ $("title").value=m.title||"";
+ $("homeTeam").value=m.home_team||"";
+ $("awayTeam").value=m.away_team||"";
+ $("homeLogo").value=m.home_logo||"";
+ $("awayLogo").value=m.away_logo||"";
+ $("matchTime").value=localDateTime(m.match_time);
+ $("streamUrl").value=m.stream_url||"";
+ $("status").value=m.status||"upcoming";
+ $("formTitle").textContent="Maçı Düzenle";
+ $("saveButton").textContent="DEĞİŞİKLİKLERİ KAYDET";
  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 async function deleteMatch(id){
- if(!confirm("Bu maçı silmek istediğine emin misin?"))return;
-
+ if(!confirm("Bu maçı silmek istiyor musun?"))return;
  try{
-  await api("/api/matches",{
-   method:"DELETE",
-   body:JSON.stringify({id})
-  });
+  await api("/api/matches",{method:"DELETE",body:JSON.stringify({id})});
   await loadMatches();
- }catch(error){
-  alert(error.message);
- }
+ }catch(err){alert(err.message);}
 }
 
-function randomCode(length=24){
- const bytes=new Uint8Array(length);
+function randomCode(){
+ const bytes=new Uint8Array(24);
  crypto.getRandomValues(bytes);
  return Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
 }
 
 async function startBroadcast(){
- const message=document.getElementById("broadcastMessage");
- const button=document.getElementById("startBroadcastButton");
- const selectedId=document.getElementById("broadcastMatch").value;
- const match=matches.find(m=>String(m.id)===String(selectedId));
-
+ const match=matches.find(m=>String(m.id)===$("broadcastMatch").value);
  if(!match){
-  message.textContent="Önce yayın yapılacak maçı seç.";
-  message.className="note error";
+  $("broadcastMessage").textContent="Önce yayın yapılacak maçı seç.";
+  $("broadcastMessage").className="note error";
   return;
  }
 
- const cameraWindow=window.open("about:blank","_blank");
-
- if(!cameraWindow){
-  message.textContent="Tarayıcı yeni pencereyi engelledi. Açılır pencerelere izin verip tekrar dene.";
-  message.className="note error";
-  return;
- }
-
- button.disabled=true;
- message.textContent="Yayın bağlantısı hazırlanıyor...";
- message.className="note";
+ $("startBroadcastButton").disabled=true;
+ $("broadcastMessage").textContent="Yayın hazırlanıyor...";
+ $("broadcastMessage").className="note";
 
  try{
-  // Uzun, rastgele ve tahmin edilmesi zor yayın kimliği.
-  const streamId="ALP"+randomCode(24);
-
-  // Yayıncı ve izleyici aynı gizli yayın kimliğini kullanır.
-  // Audience anahtarı kullanılmaz.
+  const streamId="ALP"+randomCode();
   const publisher=new URL("https://vdo.ninja/");
   publisher.searchParams.set("push",streamId);
   publisher.searchParams.set("webcam","");
-
   const viewer=new URL("https://vdo.ninja/");
   viewer.searchParams.set("view",streamId);
 
   const publisherUrl=publisher.toString();
   const viewerUrl=viewer.toString();
 
-  const payload={
-   id:match.id,
-   title:match.title,
-   home_team:match.home_team,
-   away_team:match.away_team,
-   home_logo:match.home_logo||"",
-   away_logo:match.away_logo||"",
-   match_time:match.match_time,
-   stream_url:viewerUrl,
-   status:"live"
-  };
-
   await api("/api/matches",{
    method:"PUT",
-   body:JSON.stringify(payload)
+   body:JSON.stringify({
+    id:match.id,
+    title:match.title,
+    home_team:match.home_team,
+    away_team:match.away_team,
+    home_logo:match.home_logo||"",
+    away_logo:match.away_logo||"",
+    match_time:match.match_time,
+    stream_url:viewerUrl,
+    status:"live"
+   })
   });
 
-  currentPublisherUrl=publisherUrl;
-  currentViewerUrl=viewerUrl;
+  activeMatchId=match.id;
+  activePublisherUrl=publisherUrl;
+  activeViewerUrl=viewerUrl;
 
-  document.getElementById("viewerLinkText").textContent=viewerUrl;
-  document.getElementById("broadcastResult").classList.remove("hidden");
-
-  cameraWindow.location.href=publisherUrl;
-
-  message.textContent="İzleyici bağlantısı maça kaydedildi. Kamera sayfası açıldı.";
-  message.className="note success";
-
+  $("viewerLink").value=viewerUrl;
+  $("cameraArea").classList.remove("hidden");
+  $("publisherFrame").src=publisherUrl;
+  $("stopBroadcastButton").disabled=false;
+  $("broadcastMessage").textContent="Kamera panelin içinde açılıyor. İzin verip CONNECT / BAĞLAN düğmesine bas.";
+  $("broadcastMessage").className="note success";
   await loadMatches();
-
- }catch(error){
-  cameraWindow.close();
-  message.textContent="Yayın hazırlanamadı: "+error.message;
-  message.className="note error";
+ }catch(err){
+  $("broadcastMessage").textContent="Yayın başlatılamadı: "+err.message;
+  $("broadcastMessage").className="note error";
  }finally{
-  button.disabled=false;
+  $("startBroadcastButton").disabled=false;
  }
 }
 
-document.getElementById("startBroadcastButton").addEventListener("click",startBroadcast);
+function stopCameraFrame(){
+ $("publisherFrame").src="about:blank";
+ $("cameraArea").classList.add("hidden");
+ $("stopBroadcastButton").disabled=true;
+ activePublisherUrl="";
+ activeViewerUrl="";
+}
 
-document.getElementById("copyViewerButton").addEventListener("click",async()=>{
- if(!currentViewerUrl)return;
- try{
-  await navigator.clipboard.writeText(currentViewerUrl);
-  document.getElementById("broadcastMessage").textContent="İzleyici bağlantısı kopyalandı.";
-  document.getElementById("broadcastMessage").className="note success";
- }catch(error){
-  document.getElementById("broadcastMessage").textContent="Kopyalama yapılamadı. Bağlantıya basılı tutarak kopyalayabilirsin.";
-  document.getElementById("broadcastMessage").className="note error";
+async function stopBroadcast(){
+ if(!activeMatchId){
+  stopCameraFrame();
+  return;
  }
-});
+ if(!confirm("Canlı yayını bitirmek istiyor musun?"))return;
 
-document.getElementById("openPublisherButton").addEventListener("click",()=>{
- if(currentPublisherUrl)window.open(currentPublisherUrl,"_blank");
+ $("stopBroadcastButton").disabled=true;
+ $("broadcastMessage").textContent="Yayın kapatılıyor...";
+ try{
+  const m=matches.find(x=>String(x.id)===String(activeMatchId));
+  if(m){
+   await api("/api/matches",{
+    method:"PUT",
+    body:JSON.stringify({
+     id:m.id,
+     title:m.title,
+     home_team:m.home_team,
+     away_team:m.away_team,
+     home_logo:m.home_logo||"",
+     away_logo:m.away_logo||"",
+     match_time:m.match_time,
+     stream_url:m.stream_url||"",
+     status:"finished"
+    })
+   });
+  }
+  stopCameraFrame();
+  activeMatchId=null;
+  $("broadcastMessage").textContent="Yayın bitirildi. İzleyici sayfasında canlı yayın kaldırıldı.";
+  $("broadcastMessage").className="note success";
+  await loadMatches();
+ }catch(err){
+  $("stopBroadcastButton").disabled=false;
+  $("broadcastMessage").textContent="Yayın kapatılamadı: "+err.message;
+  $("broadcastMessage").className="note error";
+ }
+}
+
+$("startBroadcastButton").addEventListener("click",startBroadcast);
+$("stopBroadcastButton").addEventListener("click",stopBroadcast);
+
+$("copyViewerButton").addEventListener("click",async()=>{
+ try{
+  await navigator.clipboard.writeText($("viewerLink").value);
+  $("broadcastMessage").textContent="İzleyici bağlantısı kopyalandı.";
+ }catch(e){
+  $("viewerLink").select();
+  $("broadcastMessage").textContent="Bağlantıyı seçip kopyalayabilirsin.";
+ }
 });
 
 checkSession();
