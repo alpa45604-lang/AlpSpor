@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>AlpSport Kolay Reklam Yönetimi</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:white;font-family:Arial,sans-serif;padding:16px}
+main{max-width:650px;margin:20px auto}
+header{font-size:24px;font-weight:900;color:#b8ff35;margin-bottom:20px}
+.panel{background:#102137;border:1px solid #29425d;border-radius:12px;padding:18px;margin-bottom:15px}
+h2{font-size:19px;margin:0 0 12px}
+p{color:#aab9ca;line-height:1.5;font-size:14px}
+label{display:block;margin:14px 0 6px;font-size:13px;color:#dce5ef}
+input,select{width:100%;padding:13px;border:1px solid #38516b;border-radius:7px;background:#07111f;color:white;font-size:15px}
+button{width:100%;padding:14px;border:0;border-radius:7px;font-weight:bold;margin-top:12px;cursor:pointer}
+.primary{background:#b8ff35;color:#07111f}
+.secondary{background:#29425d;color:white}
+.preview{width:100%;min-height:100px;max-height:190px;object-fit:contain;background:#07111f;border:1px dashed #38516b;border-radius:8px;margin-top:12px}
+#message{white-space:pre-wrap;line-height:1.5;margin-top:14px;font-size:14px}
+.good{color:#b8ff35}
+.bad{color:#ff7777}
+.note{font-size:12px;color:#91a6ba}
+</style>
+</head>
+<body>
+<main>
+<header>ALPSPORT REKLAM YÖNETİMİ</header>
+
+<section class="panel">
+<h2>Kolay reklam ekle</h2>
+<p>Reklam verenin internet sitesi adresini yaz. Sistem sitedeki reklam görselini bulmayı deneyecek.</p>
+
+<label for="site">Reklam verenin internet sitesi</label>
+<input id="site" type="url" placeholder="https://ornek-site.com">
+
+<button class="primary" id="previewButton">REKLAMI BUL VE ÖNİZLE</button>
+
+<label for="image">Reklam görsel adresi</label>
+<input id="image" type="url" placeholder="Görsel otomatik bulunacak veya buraya gir">
+
+<label for="target">Reklama tıklanınca açılacak adres</label>
+<input id="target" type="url" placeholder="https://ornek-site.com">
+
+<img id="preview" class="preview" alt="Reklam önizlemesi" hidden>
+
+<label for="slot">Reklam konumu</label>
+<select id="slot">
+<option value="top1">Yayın üstü - 1. alan</option>
+<option value="top2">Yayın üstü - 2. alan</option>
+<option value="top3">Yayın üstü - 3. alan</option>
+<option value="bottom1">Yayın altı - 4. alan</option>
+<option value="bottom2">Yayın altı - 5. alan</option>
+<option value="bottom3">Yayın altı - 6. alan</option>
+</select>
+
+<button class="primary" id="saveButton">REKLAMI KAYDET VE YAYINLA</button>
+<div id="message"></div>
+</section>
+
+<section class="panel">
+<h2>Örnek reklam denemesi</h2>
+<p>AlpSport'un kendi örnek reklamını seçtiğin alana kaydederek sistemi test edebilirsin.</p>
+<button class="secondary" id="sampleButton">ÖRNEK ALPSPORT REKLAMINI DOLDUR</button>
+<p class="note">Örnek reklam, AlpSport ana sayfasına yönlendirir. Gerçek reklam değildir.</p>
+</section>
+
+<section class="panel">
+<h2>Reklam alanları</h2>
+<div id="currentAds">Reklamlar yükleniyor...</div>
+<button class="secondary" id="reloadButton">REKLAMLARI YENİDEN YÜKLE</button>
+<p class="note">Bu ekran, mevcut altı reklam alanını kullanır. Diğer reklamlar korunur.</p>
+</section>
+
+</main>
+
+<script>
+const slots=["top1","top2","top3","bottom1","bottom2","bottom3"];
+const names={
+ top1:"Yayın üstü 1",
+ top2:"Yayın üstü 2",
+ top3:"Yayın üstü 3",
+ bottom1:"Yayın altı 1",
+ bottom2:"Yayın altı 2",
+ bottom3:"Yayın altı 3"
+};
+
+const $=id=>document.getElementById(id);
+let ads=[];
+
+function say(text,ok=true){
+ $("message").textContent=text;
+ $("message").className=ok?"good":"bad";
+}
+
+function showPreview(url){
+ const img=$("preview");
+ if(url&&/^https:\/\//i.test(url)){
+  img.src=url;
+  img.hidden=false;
+ }else{
+  img.hidden=true;
+  img.removeAttribute("src");
+ }
+}
+
+async function loadAds(){
+ $("currentAds").textContent="Reklamlar yükleniyor...";
+ try{
+  const r=await fetch("/api/ads",{cache:"no-store",credentials:"same-origin"});
+  const data=await r.json();
+  if(r.status===401)throw new Error("Önce yönetici panelinden giriş yapmalısın.");
+  if(!r.ok)throw new Error(data.error||"Reklamlar alınamadı.");
+  const existing=Array.isArray(data.ads)?data.ads:[];
+  ads=slots.map(slot=>{
+   const old=existing.find(a=>a.slot===slot);
+   return old?{...old}:{slot,image_url:"",target_url:"",active:0};
+  });
+  $("currentAds").innerHTML=ads.map(ad=>
+   `<p><b>${names[ad.slot]}:</b> ${Number(ad.active)===1?"Yayında":"Boş / kapalı"}</p>`
+  ).join("");
+ }catch(e){
+  $("currentAds").textContent=e.message;
+ }
+}
+
+$("previewButton").addEventListener("click",async()=>{
+ const url=$("site").value.trim();
+ if(!url){say("Önce internet sitesi adresini gir.",false);return;}
+ $("previewButton").disabled=true;
+ say("Reklam görseli aranıyor...");
+ try{
+  const r=await fetch("/api/ads-preview",{
+   method:"POST",
+   credentials:"same-origin",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({url})
+  });
+  const data=await r.json();
+  if(!r.ok)throw new Error(data.error||"Önizleme alınamadı.");
+  $("target").value=data.target_url||url;
+  if(data.image_url){
+   $("image").value=data.image_url;
+   showPreview(data.image_url);
+   say((data.title?data.title+"\n":"")+data.message,true);
+  }else{
+   say(data.message+" Görsel adresini elle girebilirsin.",false);
+  }
+ }catch(e){
+  say(e.message,false);
+ }finally{
+  $("previewButton").disabled=false;
+ }
+});
+
+$("image").addEventListener("input",()=>showPreview($("image").value.trim()));
+
+$("sampleButton").addEventListener("click",()=>{
+ $("site").value="https://alpsportt.pages.dev/";
+ $("target").value="https://alpsportt.pages.dev/";
+ $("image").value="https://placehold.co/1200x300/07111f/b8ff35.png?text=ALPSPORT+REKLAM+DENEMESI";
+ showPreview($("image").value);
+ say("Örnek reklam dolduruldu. Şimdi reklam konumunu seçip kaydedebilirsin.");
+});
+
+$("saveButton").addEventListener("click",async()=>{
+ const slot=$("slot").value;
+ const image=$("image").value.trim();
+ const target=$("target").value.trim();
+
+ if(!/^https:\/\//i.test(image)){
+  say("Reklam görsel adresi HTTPS ile başlamalı.",false);return;
+ }
+ if(!/^https:\/\//i.test(target)){
+  say("Reklam bağlantısı HTTPS ile başlamalı.",false);return;
+ }
+
+ $("saveButton").disabled=true;
+ say("Reklam kaydediliyor...");
+
+ try{
+  if(!ads.length)await loadAds();
+  if(!ads.length)throw new Error("Reklam listesi yüklenemedi. Yönetici girişini kontrol et.");
+
+  const updated=ads.map(ad=>ad.slot===slot?{
+   slot:slot,
+   image_url:image,
+   target_url:target,
+   active:1
+  }:ad);
+
+  const r=await fetch("/api/ads",{
+   method:"PUT",
+   credentials:"same-origin",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({ads:updated})
+  });
+  const data=await r.json();
+  if(r.status===401)throw new Error("Yönetici oturumu bulunamadı. Önce yönetici girişi yap.");
+  if(!r.ok)throw new Error(data.error||"Reklam kaydedilemedi.");
+
+  ads=updated;
+  say("Reklam başarıyla kaydedildi ve yayına alındı.",true);
+  await loadAds();
+ }catch(e){
+  say(e.message,false);
+ }finally{
+  $("saveButton").disabled=false;
+ }
+});
+
+$("reloadButton").addEventListener("click",loadAds);
+loadAds();
+</script>
+</body>
+</html>
