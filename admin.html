@@ -26,7 +26,6 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
 .success{color:#b8ff35}
 .error{color:#ff7777}
 .hidden{display:none!important}
-#cameraFrame{width:100%;height:380px;background:#000;border:1px solid #38516b;border-radius:9px}
 .camera-buttons{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
 .camera-buttons button{flex:1;min-width:130px}
 .match{background:#0b192a;border:1px solid #29425d;border-radius:9px;padding:15px;margin:12px 0}
@@ -35,7 +34,7 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
 .match-actions{display:flex;gap:8px;margin-top:12px}
 .match-actions button{flex:1}
 .notice{font-size:12px;color:#aab9ca}
-#message{margin-top:12px;font-size:14px}
+#cameraMessage,#formMessage,#adsMessage{margin-top:12px;font-size:14px}
 .ad-item{background:#0b192a;border:1px solid #29425d;border-radius:9px;padding:15px;margin:12px 0}
 .ad-item h3{font-size:15px;margin:0 0 10px;color:#b8ff35}
 .ad-active{display:flex;align-items:center;gap:9px;margin:0 0 8px}
@@ -49,7 +48,6 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
  .logo{font-size:21px}
  .container{width:94%;margin:16px auto}
  .panel{padding:15px}
- #cameraFrame{height:280px}
  .stats{gap:10px}
 }
 </style>
@@ -66,14 +64,11 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
 <section id="loginPanel" class="panel">
  <h1>Yönetici Girişi</h1>
  <p>AlpSport yönetim paneline giriş yap.</p>
-
  <form id="loginForm">
   <label for="username">Kullanıcı adı</label>
   <input id="username" autocomplete="username" required>
-
   <label for="password">Şifre</label>
   <input id="password" type="password" autocomplete="current-password" required>
-
   <button class="primary" type="submit">GİRİŞ YAP</button>
  </form>
  <div id="loginMessage"></div>
@@ -81,94 +76,80 @@ button{border:0;border-radius:7px;padding:13px 16px;font-weight:bold;cursor:poin
 
 <div id="adminPanel" class="hidden">
 
- <section class="panel">
-  <h1>AlpSport Yönetim Paneli</h1>
-  <p>Maçlarını, canlı yayınlarını, reklamlarını ve izlenme bilgilerini buradan yönetebilirsin.</p>
- </section>
+<section class="panel">
+ <h1>AlpSport Yönetim Paneli</h1>
+ <p>Maçlarını, canlı yayınlarını, reklamlarını ve izlenme bilgilerini buradan yönetebilirsin.</p>
+</section>
 
- <section class="panel">
-  <h2>Telefon Kamerasından Canlı Yayın</h2>
-  <p>Yayın kamerası bu panelin içinde açılır. Kamera ve mikrofon izinlerini vermen gerekir.</p>
+<section class="panel">
+ <h2>Telefon Kamerasından Canlı Yayın</h2>
+ <p>Kamerayı ayrı bir sekmede açacağız. Yönetim panelini yenilesen bile kamera sekmesini kapatmadığın sürece yayın devam edebilir.</p>
 
-  <iframe
-   id="cameraFrame"
-   allow="camera; microphone; autoplay; fullscreen; picture-in-picture"
-   allowfullscreen
-   title="AlpSport yayın kamerası">
-  </iframe>
+ <div class="camera-buttons">
+  <button id="startCamera" class="primary">KAMERAYI AÇ / YAYINI BAŞLAT</button>
+  <button id="stopCamera" class="danger">YAYINI DURDUR</button>
+ </div>
 
-  <div class="camera-buttons">
-   <button id="startCamera" class="primary">KAMERAYI AÇ / YAYINI BAŞLAT</button>
-   <button id="stopCamera" class="danger">YAYINI DURDUR</button>
-  </div>
+ <label for="viewerUrl">İzleyici yayın adresi</label>
+ <input id="viewerUrl" readonly placeholder="Kamera başlatılınca otomatik oluşur">
+ <button id="copyViewerUrl" class="secondary" style="width:100%">İZLEYİCİ ADRESİNİ KOPYALA</button>
 
-  <label for="viewerUrl">İzleyici yayın adresi</label>
-  <input id="viewerUrl" readonly placeholder="Kamera başlatılınca otomatik oluşur">
+ <p class="notice">Yayın adresi maç ekleme formuna otomatik aktarılır. Ziyaretçiler yayın kodu girmeden AlpSport üzerinden izleyebilir.</p>
+ <div id="cameraMessage"></div>
+</section>
 
-  <button id="copyViewerUrl" class="secondary" style="width:100%">İZLEYİCİ ADRESİNİ KOPYALA</button>
+<section class="panel">
+ <h2>Reklam Yönetimi</h2>
+ <p>Oynatıcının üstünde 3, altında 3 reklam alanı bulunur.</p>
+ <div id="adsList">Reklam alanları yükleniyor...</div>
+ <button id="saveAds" class="primary">6 REKLAMI KAYDET</button>
+ <div id="adsMessage"></div>
+</section>
 
-  <p class="notice">Bu adres maç ekleme formundaki yayın adresine otomatik aktarılır. Ziyaretçiler yayını AlpSport üzerinden izler.</p>
-  <div id="cameraMessage"></div>
- </section>
+<section class="panel" id="matchFormPanel">
+ <h2 id="formTitle">Yeni Maç / Yayın Ekle</h2>
+ <form id="matchForm">
+  <input type="hidden" id="matchId">
 
- <section class="panel">
-  <h2>Reklam Yönetimi</h2>
-  <p>Ana sayfada oynatıcının üstünde 3, altında 3 reklam alanı bulunur. Her reklam için görsel adresi ve tıklanınca açılacak bağlantıyı girebilirsin.</p>
+  <label>Yayın başlığı</label>
+  <input id="title" required placeholder="Örnek: Akşam Maçı">
 
-  <div id="adsList">
-   Reklam alanları yükleniyor...
-  </div>
+  <label>Ev sahibi takım</label>
+  <input id="homeTeam" required>
 
-  <button id="saveAds" class="primary">6 REKLAMI KAYDET</button>
-  <div id="adsMessage"></div>
- </section>
+  <label>Deplasman takımı</label>
+  <input id="awayTeam" required>
 
- <section class="panel" id="matchFormPanel">
-  <h2 id="formTitle">Yeni Maç / Yayın Ekle</h2>
+  <label>Ev sahibi logo adresi</label>
+  <input id="homeLogo" type="url">
 
-  <form id="matchForm">
-   <input type="hidden" id="matchId">
+  <label>Deplasman logo adresi</label>
+  <input id="awayLogo" type="url">
 
-   <label>Yayın başlığı</label>
-   <input id="title" required placeholder="Örnek: Akşam Maçı">
+  <label>Maç tarihi ve saati</label>
+  <input id="matchTime" type="datetime-local" required>
 
-   <label>Ev sahibi takım</label>
-   <input id="homeTeam" required placeholder="Ev sahibi takım">
+  <label>Yayın adresi</label>
+  <input id="streamUrl" type="url" placeholder="Kamera başlatılınca otomatik doldurulur">
 
-   <label>Deplasman takımı</label>
-   <input id="awayTeam" required placeholder="Deplasman takımı">
+  <label>Maç durumu</label>
+  <select id="matchStatus">
+   <option value="upcoming">Yaklaşan</option>
+   <option value="live">Canlı</option>
+   <option value="finished">Tamamlandı</option>
+  </select>
 
-   <label>Ev sahibi logo adresi (isteğe bağlı)</label>
-   <input id="homeLogo" type="url" placeholder="https://...">
+  <button class="primary" type="submit" id="saveButton">MAÇI KAYDET</button>
+  <button class="secondary hidden" type="button" id="cancelEdit" style="width:100%;margin-top:9px">DÜZENLEMEYİ İPTAL ET</button>
+ </form>
+ <div id="formMessage"></div>
+</section>
 
-   <label>Deplasman logo adresi (isteğe bağlı)</label>
-   <input id="awayLogo" type="url" placeholder="https://...">
-
-   <label>Maç tarihi ve saati</label>
-   <input id="matchTime" type="datetime-local" required>
-
-   <label>Yayın adresi</label>
-   <input id="streamUrl" type="url" placeholder="Kamerayı başlatınca otomatik doldurulur">
-
-   <label>Maç durumu</label>
-   <select id="matchStatus">
-    <option value="upcoming">Yaklaşan</option>
-    <option value="live">Canlı</option>
-    <option value="finished">Tamamlandı</option>
-   </select>
-
-   <button class="primary" type="submit" id="saveButton">MAÇI KAYDET</button>
-   <button class="secondary hidden" type="button" id="cancelEdit" style="width:100%;margin-top:9px">DÜZENLEMEYİ İPTAL ET</button>
-  </form>
-
-  <div id="formMessage"></div>
- </section>
-
- <section class="panel">
-  <h2>Eklenen Maçlar ve Yayınlar</h2>
-  <p>Canlı maçların izleyici bilgileri otomatik olarak yenilenir.</p>
-  <div id="matchesList">Maçlar yükleniyor...</div>
- </section>
+<section class="panel">
+ <h2>Eklenen Maçlar ve Yayınlar</h2>
+ <p>Canlı maçların izleyici bilgileri otomatik yenilenir.</p>
+ <div id="matchesList">Maçlar yükleniyor...</div>
+</section>
 
 </div>
 </main>
@@ -179,11 +160,11 @@ const adminPanel=document.getElementById("adminPanel");
 const loginMessage=document.getElementById("loginMessage");
 const formMessage=document.getElementById("formMessage");
 const cameraMessage=document.getElementById("cameraMessage");
-const cameraFrame=document.getElementById("cameraFrame");
 
 let matches=[];
-let roomId="";
 let statsTimer=null;
+let publisherTab=null;
+let roomId="";
 
 function safe(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
@@ -213,8 +194,6 @@ function showLogin(){
 document.getElementById("loginForm").addEventListener("submit",async e=>{
  e.preventDefault();
  loginMessage.textContent="Giriş kontrol ediliyor...";
- loginMessage.className="";
-
  try{
   const response=await fetch("/api/login",{
    method:"POST",
@@ -225,15 +204,11 @@ document.getElementById("loginForm").addEventListener("submit",async e=>{
     password:document.getElementById("password").value
    })
   });
-
   const data=await response.json();
-
   if(!response.ok)throw new Error(data.error||"Giriş başarısız.");
-
   loginMessage.textContent="Giriş başarılı.";
   loginMessage.className="success";
   showAdmin();
-
  }catch(error){
   loginMessage.textContent=error.message;
   loginMessage.className="error";
@@ -242,12 +217,8 @@ document.getElementById("loginForm").addEventListener("submit",async e=>{
 
 document.getElementById("logoutButton").addEventListener("click",async()=>{
  try{
-  await fetch("/api/logout",{
-   method:"POST",
-   credentials:"same-origin"
-  });
+  await fetch("/api/logout",{method:"POST",credentials:"same-origin"});
  }catch(e){}
- stopCamera();
  showLogin();
 });
 
@@ -267,20 +238,32 @@ function getRoomId(){
 document.getElementById("startCamera").addEventListener("click",()=>{
  roomId=getRoomId();
 
- const publishUrl="https://vdo.ninja/?push="+encodeURIComponent(roomId)+"&cleanoutput&autostart=1";
  const watchUrl="https://vdo.ninja/?view="+encodeURIComponent(roomId)+"&autoplay=1";
+ const publisherUrl="/publisher.html?room="+encodeURIComponent(roomId);
 
- cameraFrame.src=publishUrl;
  document.getElementById("viewerUrl").value=watchUrl;
  document.getElementById("streamUrl").value=watchUrl;
 
- cameraMessage.textContent="Kamera açılıyor. Tarayıcı kamera ve mikrofon izni isterse izin ver.";
+ publisherTab=window.open(publisherUrl,"AlpSportYayinKamerasi");
+
+ if(!publisherTab){
+  cameraMessage.textContent="Yeni sekme açılamadı. Tarayıcıda açılır pencerelere izin verip tekrar dene.";
+  cameraMessage.className="error";
+  return;
+ }
+
+ cameraMessage.textContent="Yayın kamerası yeni sekmede açıldı. Kamera ve mikrofon izni istenirse izin ver.";
  cameraMessage.className="success";
 });
 
 function stopCamera(){
- cameraFrame.src="about:blank";
- cameraMessage.textContent="Kamera panelden kapatıldı.";
+ try{
+  localStorage.setItem("alpsport_stop_camera",String(Date.now()));
+ }catch(e){}
+ if(publisherTab&&!publisherTab.closed){
+  try{publisherTab.postMessage({type:"ALPSPORT_STOP"},"*");}catch(e){}
+ }
+ cameraMessage.textContent="Yayın durdurma komutu gönderildi. Kamera sekmesinde durdurulduğunu kontrol et.";
  cameraMessage.className="";
 }
 
@@ -314,15 +297,11 @@ function renderAdFields(){
  document.getElementById("adsList").innerHTML=adSlots.map(ad=>`
   <div class="ad-item">
    <h3>${ad.name}</h3>
-
    <label>Reklam görselinin adresi</label>
    <input id="ad-${ad.id}-image" type="url" placeholder="https://gorsel-adresi.com/reklam.jpg">
-
    <img id="ad-${ad.id}-preview" class="ad-preview" alt="Reklam ön izlemesi">
-
    <label>Reklama tıklanınca açılacak adres</label>
    <input id="ad-${ad.id}-link" type="url" placeholder="https://site-adresi.com">
-
    <div class="ad-active">
     <input id="ad-${ad.id}-active" type="checkbox">
     <label for="ad-${ad.id}-active">Bu reklamı ziyaretçilere göster</label>
@@ -333,12 +312,10 @@ function renderAdFields(){
  adSlots.forEach(ad=>{
   const input=document.getElementById(`ad-${ad.id}-image`);
   const preview=document.getElementById(`ad-${ad.id}-preview`);
-
   input.addEventListener("input",()=>{
    preview.src=input.value.trim();
    preview.style.display=input.value.trim()?"block":"none";
   });
-
   preview.style.display="none";
  });
 }
@@ -347,43 +324,30 @@ async function loadAds(){
  const message=document.getElementById("adsMessage");
  renderAdFields();
  message.textContent="Reklam bilgileri yükleniyor...";
- message.className="";
-
  try{
-  const response=await fetch("/api/ads",{
-   cache:"no-store",
-   credentials:"same-origin"
-  });
-
+  const response=await fetch("/api/ads",{cache:"no-store",credentials:"same-origin"});
   const data=await response.json();
   if(!response.ok)throw new Error(data.error||"Reklam bilgileri alınamadı.");
-
   const ads=Array.isArray(data.ads)?data.ads:[];
-
   adSlots.forEach(slot=>{
    const ad=ads.find(x=>x.slot===slot.id);
    if(!ad)return;
-
    const image=document.getElementById(`ad-${slot.id}-image`);
    const link=document.getElementById(`ad-${slot.id}-link`);
    const active=document.getElementById(`ad-${slot.id}-active`);
    const preview=document.getElementById(`ad-${slot.id}-preview`);
-
    image.value=ad.image_url||"";
    link.value=ad.target_url||"";
    active.checked=Number(ad.active)===1;
-
    if(image.value){
     preview.src=image.value;
     preview.style.display="block";
    }
   });
-
   message.textContent="Reklam alanları hazır.";
   message.className="success";
-
  }catch(error){
-  message.textContent=error.message+" Veritabanı tablolarını bir sonraki adımda oluşturacağız.";
+  message.textContent=error.message;
   message.className="error";
  }
 }
@@ -396,10 +360,7 @@ document.getElementById("saveAds").addEventListener("click",async()=>{
   target_url:document.getElementById(`ad-${slot.id}-link`).value.trim(),
   active:document.getElementById(`ad-${slot.id}-active`).checked
  }));
-
  message.textContent="Reklamlar kaydediliyor...";
- message.className="";
-
  try{
   const response=await fetch("/api/ads",{
    method:"PUT",
@@ -407,17 +368,14 @@ document.getElementById("saveAds").addEventListener("click",async()=>{
    credentials:"same-origin",
    body:JSON.stringify({ads})
   });
-
   const data=await response.json();
   if(response.status===401){
    showLogin();
    throw new Error("Yönetici girişi gerekli. Tekrar giriş yap.");
   }
   if(!response.ok)throw new Error(data.error||"Reklamlar kaydedilemedi.");
-
   message.textContent="Altı reklam alanı başarıyla kaydedildi.";
   message.className="success";
-
  }catch(error){
   message.textContent=error.message;
   message.className="error";
@@ -427,25 +385,16 @@ document.getElementById("saveAds").addEventListener("click",async()=>{
 async function loadMatches(){
  const list=document.getElementById("matchesList");
  list.textContent="Maçlar yükleniyor...";
-
  try{
-  const response=await fetch("/api/matches",{
-   cache:"no-store",
-   credentials:"same-origin"
-  });
-
+  const response=await fetch("/api/matches",{cache:"no-store",credentials:"same-origin"});
   const data=await response.json();
-
   if(response.status===401){
    showLogin();
    throw new Error("Oturum süresi dolmuş. Tekrar giriş yap.");
   }
-
   if(!response.ok)throw new Error(data.error||"Maçlar alınamadı.");
-
   matches=Array.isArray(data.matches)?data.matches:[];
   renderMatches();
-
  }catch(error){
   list.textContent=error.message;
  }
@@ -453,12 +402,10 @@ async function loadMatches(){
 
 function renderMatches(){
  const list=document.getElementById("matchesList");
-
  if(!matches.length){
   list.innerHTML="<p>Henüz maç veya yayın eklenmemiş.</p>";
   return;
  }
-
  list.innerHTML=matches.map(m=>`
   <div class="match">
    <div class="match-top">
@@ -467,56 +414,35 @@ function renderMatches(){
    </div>
    <div>${safe(m.home_team)} - ${safe(m.away_team)}</div>
    <small>${safe(new Date(m.match_time).toLocaleString("tr-TR"))}</small>
-
    ${m.status==="live"?`
     <div class="stats" data-match-stats="${safe(m.id)}">
      <span>Aktif izleyici: <strong>Yükleniyor...</strong></span>
      <span>Toplam oturum: <strong>Yükleniyor...</strong></span>
-    </div>
-   `:""}
-
+    </div>`:""}
    <div class="match-actions">
     <button class="secondary" data-edit="${safe(m.id)}">DÜZENLE</button>
     <button class="danger" data-delete="${safe(m.id)}">SİL</button>
    </div>
   </div>
  `).join("");
-
  loadAllMatchStats();
 }
 
 async function loadAllMatchStats(){
- const liveMatches=matches.filter(m=>m.status==="live");
-
- await Promise.all(liveMatches.map(async m=>{
+ await Promise.all(matches.filter(m=>m.status==="live").map(async m=>{
   try{
-   const response=await fetch(
-    "/api/viewers?match_id="+encodeURIComponent(m.id),
-    {cache:"no-store"}
-   );
-
+   const response=await fetch("/api/viewers?match_id="+encodeURIComponent(m.id),{cache:"no-store"});
    const data=await response.json();
    if(!response.ok)throw new Error("Bilgi alınamadı");
-
-   const element=Array.from(
-    document.querySelectorAll("[data-match-stats]")
-   ).find(el=>el.dataset.matchStats===String(m.id));
-
-   if(!element)return;
-
-   element.innerHTML=`
-    <span>Aktif izleyici: <strong>${Number(data.active_viewers||0)}</strong></span>
-    <span>Toplam oturum: <strong>${Number(data.total_views||0)}</strong></span>
-   `;
-
-  }catch(error){
-   const element=Array.from(
-    document.querySelectorAll("[data-match-stats]")
-   ).find(el=>el.dataset.matchStats===String(m.id));
-
+   const element=Array.from(document.querySelectorAll("[data-match-stats]")).find(el=>el.dataset.matchStats===String(m.id));
    if(element){
-    element.innerHTML="<span>İzlenme bilgisi şu anda alınamıyor.</span>";
+    element.innerHTML=`
+     <span>Aktif izleyici: <strong>${Number(data.active_viewers||0)}</strong></span>
+     <span>Toplam oturum: <strong>${Number(data.total_views||0)}</strong></span>`;
    }
+  }catch(error){
+   const element=Array.from(document.querySelectorAll("[data-match-stats]")).find(el=>el.dataset.matchStats===String(m.id));
+   if(element)element.innerHTML="<span>İzlenme bilgisi alınamıyor.</span>";
   }
  }));
 }
@@ -524,17 +450,11 @@ async function loadAllMatchStats(){
 function startStatsRefresh(){
  stopStatsRefresh();
  statsTimer=setInterval(()=>{
-  if(!adminPanel.classList.contains("hidden")){
-   loadAllMatchStats();
-  }
+  if(!adminPanel.classList.contains("hidden"))loadAllMatchStats();
  },20000);
 }
-
 function stopStatsRefresh(){
- if(statsTimer){
-  clearInterval(statsTimer);
-  statsTimer=null;
- }
+ if(statsTimer){clearInterval(statsTimer);statsTimer=null;}
 }
 
 function resetForm(){
@@ -549,7 +469,6 @@ function resetForm(){
 function editMatch(id){
  const m=matches.find(x=>String(x.id)===String(id));
  if(!m)return;
-
  document.getElementById("matchId").value=m.id;
  document.getElementById("title").value=m.title||"";
  document.getElementById("homeTeam").value=m.home_team||"";
@@ -558,11 +477,9 @@ function editMatch(id){
  document.getElementById("awayLogo").value=m.away_logo||"";
  document.getElementById("streamUrl").value=m.stream_url||"";
  document.getElementById("matchStatus").value=m.status||"upcoming";
-
  const date=new Date(m.match_time);
  const localDate=new Date(date.getTime()-date.getTimezoneOffset()*60000);
  document.getElementById("matchTime").value=localDate.toISOString().slice(0,16);
-
  document.getElementById("formTitle").textContent="Maçı Düzenle";
  document.getElementById("saveButton").textContent="DEĞİŞİKLİKLERİ KAYDET";
  document.getElementById("cancelEdit").classList.remove("hidden");
@@ -573,7 +490,6 @@ document.getElementById("cancelEdit").addEventListener("click",resetForm);
 
 document.getElementById("matchForm").addEventListener("submit",async e=>{
  e.preventDefault();
-
  const id=document.getElementById("matchId").value;
  const body={
   title:document.getElementById("title").value.trim(),
@@ -585,16 +501,12 @@ document.getElementById("matchForm").addEventListener("submit",async e=>{
   stream_url:document.getElementById("streamUrl").value.trim(),
   status:document.getElementById("matchStatus").value
  };
-
  if(body.status==="live"&&!body.stream_url){
-  formMessage.textContent="Canlı yayın için önce kamerayı başlat veya yayın adresi gir.";
+  formMessage.textContent="Canlı yayın için önce kamerayı başlat.";
   formMessage.className="error";
   return;
  }
-
  formMessage.textContent="Kaydediliyor...";
- formMessage.className="";
-
  try{
   const response=await fetch("/api/matches",{
    method:id?"PUT":"POST",
@@ -602,21 +514,16 @@ document.getElementById("matchForm").addEventListener("submit",async e=>{
    credentials:"same-origin",
    body:JSON.stringify(id?{...body,id}:body)
   });
-
   const data=await response.json();
-
   if(response.status===401){
    showLogin();
    throw new Error("Yönetici oturumu bulunamadı. Tekrar giriş yap.");
   }
-
   if(!response.ok)throw new Error(data.error||"Kayıt başarısız.");
-
   formMessage.textContent=data.message||"İşlem başarılı.";
   formMessage.className="success";
   resetForm();
   await loadMatches();
-
  }catch(error){
   formMessage.textContent=error.message;
   formMessage.className="error";
@@ -626,16 +533,10 @@ document.getElementById("matchForm").addEventListener("submit",async e=>{
 document.getElementById("matchesList").addEventListener("click",async e=>{
  const editButton=e.target.closest("[data-edit]");
  const deleteButton=e.target.closest("[data-delete]");
-
- if(editButton){
-  editMatch(editButton.dataset.edit);
-  return;
- }
-
+ if(editButton){editMatch(editButton.dataset.edit);return;}
  if(deleteButton){
   const id=deleteButton.dataset.delete;
   if(!confirm("Bu maçı silmek istediğine emin misin?"))return;
-
   try{
    const response=await fetch("/api/matches",{
     method:"DELETE",
@@ -643,25 +544,18 @@ document.getElementById("matchesList").addEventListener("click",async e=>{
     credentials:"same-origin",
     body:JSON.stringify({id})
    });
-
    const data=await response.json();
    if(response.status===401){
     showLogin();
     throw new Error("Tekrar giriş yapmalısın.");
    }
    if(!response.ok)throw new Error(data.error||"Silinemedi.");
-
    await loadMatches();
-
-  }catch(error){
-   alert(error.message);
-  }
+  }catch(error){alert(error.message);}
  }
 });
 
-if(sessionStorage.getItem("alpsport_admin_ui")==="1"){
- showAdmin();
-}
+if(sessionStorage.getItem("alpsport_admin_ui")==="1")showAdmin();
 </script>
 </body>
 </html>
