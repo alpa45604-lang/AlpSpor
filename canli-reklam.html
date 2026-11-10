@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlpSport Canlı Reklam Yönetimi</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:15px;background:#07111f;color:white;font-family:Arial}
+main{max-width:650px;margin:auto}
+h1{color:#b8ff35;font-size:23px}
+p{color:#aab9ca;font-size:14px;line-height:1.5}
+.ad{background:#102137;border:1px solid #29425d;border-radius:12px;padding:15px;margin:15px 0}
+h2{font-size:18px;margin:0 0 12px}
+label{display:block;margin:12px 0 6px;font-size:13px}
+input{width:100%;padding:12px;border-radius:7px;border:1px solid #38516b;background:#07111f;color:white;font-size:14px}
+button{width:100%;padding:14px;margin-top:12px;border:0;border-radius:7px;background:#b8ff35;color:#07111f;font-weight:bold;font-size:14px}
+.preview{width:100%;max-height:150px;object-fit:contain;background:#07111f;margin-top:10px;border-radius:7px}
+#message{white-space:pre-wrap;margin:15px 0;color:#b8ff35}
+.small{font-size:12px;color:#91a6ba}
+</style>
+</head>
+<body>
+<main>
+<h1>ALPSPORT CANLI REKLAMLARI</h1>
+<p>Canlı yayın sırasında gösterilecek beş reklamı buradan yönetebilirsin. Reklamlar sırayla gösterilecek.</p>
+<p><b>Gösterim:</b> Her 20 dakikada bir, beş reklam sırayla 10 saniye gösterilecek.</p>
+
+<div id="ads">Reklamlar yükleniyor...</div>
+
+<button id="save">BEŞ REKLAMI KAYDET</button>
+<div id="message"></div>
+<p class="small">Reklam görseli bulunamazsa görsel adresini kendin girebilirsin. Adresler HTTPS ile başlamalıdır.</p>
+</main>
+
+<script>
+const names=["1. Reklam","2. Reklam","3. Reklam","4. Reklam","5. Reklam"];
+const slots=["live1","live2","live3","live4","live5"];
+const adsRoot=document.getElementById("ads");
+const message=document.getElementById("message");
+let ads=[];
+
+function say(t){message.textContent=t;}
+
+function draw(){
+ adsRoot.innerHTML=names.map((name,i)=>`
+ <section class="ad">
+  <h2>${name}</h2>
+
+  <label>Reklam verenin internet sitesi</label>
+  <input id="site${i}" type="url" placeholder="https://ornek-site.com">
+
+  <button type="button" onclick="findAd(${i})">SİTEDEN REKLAM GÖRSELİNİ BUL</button>
+
+  <label>Reklam görsel adresi</label>
+  <input id="image${i}" type="url" placeholder="https://...">
+
+  <img id="preview${i}" class="preview" hidden alt="Reklam önizlemesi">
+
+  <label>Reklama tıklanınca açılacak adres</label>
+  <input id="target${i}" type="url" placeholder="https://ornek-site.com">
+ </section>
+ `).join("");
+
+ for(let i=0;i<5;i++){
+  document.getElementById("image"+i).addEventListener("input",()=>{
+   showImage(i,document.getElementById("image"+i).value);
+  });
+ }
+}
+
+function showImage(i,url){
+ const img=document.getElementById("preview"+i);
+ if(url && /^https:\/\//i.test(url)){
+  img.src=url;
+  img.hidden=false;
+ }else{
+  img.hidden=true;
+  img.removeAttribute("src");
+ }
+}
+
+async function loadAds(){
+ try{
+  const r=await fetch("/api/live-ads",{cache:"no-store"});
+  const data=await r.json();
+  if(!r.ok)throw new Error(data.error||"Reklamlar yüklenemedi.");
+
+  ads=Array.isArray(data.ads)?data.ads:[];
+  draw();
+
+  for(let i=0;i<5;i++){
+   const old=ads.find(a=>a.slot===slots[i]);
+   if(old){
+    document.getElementById("image"+i).value=old.image_url||"";
+    document.getElementById("target"+i).value=old.target_url||"";
+    document.getElementById("site"+i).value=old.target_url||"";
+    showImage(i,old.image_url||"");
+   }
+  }
+  say("Mevcut canlı reklamlar yüklendi.");
+ }catch(e){
+  draw();
+  say(e.message+" Yönetici girişi ve veritabanı bağlantısını kontrol et.");
+ }
+}
+
+async function findAd(i){
+ const site=document.getElementById("site"+i).value.trim();
+ if(!site){say((i+1)+". reklam için önce internet sitesi adresini yaz.");return;}
+
+ say((i+1)+". reklamın görseli aranıyor...");
+
+ try{
+  const r=await fetch("/api/ads-preview",{
+   method:"POST",
+   credentials:"same-origin",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({url:site})
+  });
+  const data=await r.json();
+  if(!r.ok)throw new Error(data.error||"Görsel bulunamadı.");
+
+  document.getElementById("target"+i).value=data.target_url||site;
+
+  if(data.image_url){
+   document.getElementById("image"+i).value=data.image_url;
+   showImage(i,data.image_url);
+   say((i+1)+". reklamın görseli bulundu.");
+  }else{
+   say("Otomatik görsel bulunamadı. Görsel adresini elle girebilirsin.");
+  }
+ }catch(e){
+  say(e.message);
+ }
+}
+
+document.getElementById("save").addEventListener("click",async()=>{
+ const list=[];
+
+ for(let i=0;i<5;i++){
+  const image=document.getElementById("image"+i).value.trim();
+  const target=document.getElementById("target"+i).value.trim();
+
+  if(!/^https:\/\//i.test(image)||!/^https:\/\//i.test(target)){
+   say((i+1)+". reklamın görsel ve hedef adresini HTTPS olarak doldur.");
+   return;
+  }
+
+  list.push({
+   slot:slots[i],
+   image_url:image,
+   target_url:target,
+   active:1
+  });
+ }
+
+ const btn=document.getElementById("save");
+ btn.disabled=true;
+ say("Beş reklam kaydediliyor...");
+
+ try{
+  const r=await fetch("/api/live-ads",{
+   method:"PUT",
+   credentials:"same-origin",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({ads:list})
+  });
+
+  const data=await r.json();
+  if(!r.ok)throw new Error(data.error||"Reklamlar kaydedilemedi.");
+
+  say("Beş canlı yayın reklamı başarıyla kaydedildi.");
+ }catch(e){
+  say(e.message);
+ }finally{
+  btn.disabled=false;
+ }
+});
+
+loadAds();
+</script>
+</body>
+</html>
