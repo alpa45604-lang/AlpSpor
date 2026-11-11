@@ -87,6 +87,7 @@ nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
 .player-frame-wrap:fullscreen #liveFrame,.player-frame-wrap:-webkit-full-screen #liveFrame{width:100vw!important;height:100vh!important;height:100dvh!important;min-width:100vw!important;min-height:100vh!important;min-height:100dvh!important}
 .player-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#aab9ca;padding:20px}
 .player-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+#shareStatus{flex-basis:100%;min-width:100%;margin:0}
 .player-controls button{flex:1;min-width:130px}
 button{border:0;border-radius:7px;padding:12px;background:#b8ff35;color:#07111f;font-weight:bold;cursor:pointer}
 .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:13px}
@@ -227,7 +228,7 @@ nav a{font-size:11px;margin-left:8px}
     <div class="matches" id="automaticUpcoming">
      <div class="empty">Fikstür yükleniyor...</div>
     </div>
-    <p class="info">Yaklaşan maçlar bağlı futbol veri sağlayıcısından alınır.</p>
+    <p class="info">Yaklaşan Türkiye maçları TFF verilerinden alınır.</p>
    </section>
 
    <section class="section" id="fikstur">
@@ -774,29 +775,40 @@ document.getElementById("refreshAll").addEventListener("click",async()=>{
 document.getElementById("shareSiteButton").addEventListener("click",async()=>{
  const shareData={title:"AlpSport | Türkiye Futbolu ve Canlı Yayın",text:"Canlı maçlar, TFF fikstürü ve puan durumu AlpSport'ta.",url:location.origin+"/"};
  const status=document.getElementById("shareStatus");
- const button=document.getElementById("shareSiteButton");
+ status.textContent="AlpSport bağlantısı hazırlanıyor...";
+ let copied=false;
  try{
-  if(navigator.share){
+  if(navigator.clipboard?.writeText){
+   await navigator.clipboard.writeText(shareData.url);
+   copied=true;
+   status.textContent="AlpSport bağlantısı kopyalandı. İstediğin kişiye gönderebilirsin.";
+  }
+ }catch(error){}
+ if(navigator.share){
+  status.textContent=copied?"Bağlantı kopyalandı. Paylaşım seçenekleri açılıyor...":"Paylaşım seçenekleri açılıyor...";
+  try{
    await navigator.share(shareData);
    status.textContent="AlpSport bağlantısı paylaşıldı.";
-  }else if(navigator.clipboard?.writeText){
+  }catch(error){
+   if(error?.name==="AbortError"){
+    status.textContent=copied?"Bağlantı kopyalandı; paylaşım menüsü kapatıldı.":"Paylaşım iptal edildi.";
+   }else if(!copied){
+    try{
+     await navigator.clipboard.writeText(shareData.url);
+     status.textContent="Paylaşım menüsü açılamadı; bağlantı kopyalandı.";
+    }catch(copyError){
+     window.prompt("AlpSport bağlantısını kopyala:",shareData.url);
+     status.textContent="Bağlantı paylaşım için hazır.";
+    }
+   }
+  }
+ }else if(!copied){
+  try{
    await navigator.clipboard.writeText(shareData.url);
    status.textContent="AlpSport bağlantısı kopyalandı. İstediğin kişiye gönderebilirsin.";
-  }else{
+  }catch(error){
    window.prompt("AlpSport bağlantısını kopyala:",shareData.url);
-   status.textContent="AlpSport bağlantısı paylaşım için hazır.";
-  }
- }catch(error){
-  if(error?.name==="AbortError"){
-   status.textContent="Paylaşım iptal edildi.";
-  }else{
-   try{
-    await navigator.clipboard.writeText(shareData.url);
-    status.textContent="Paylaşım menüsü açılamadı; bağlantı kopyalandı.";
-   }catch(copyError){
-    window.prompt("AlpSport bağlantısını kopyala:",shareData.url);
-    status.textContent="Bağlantı paylaşım için hazır.";
-   }
+   status.textContent="Bağlantı paylaşım için hazır.";
   }
  }
 });
