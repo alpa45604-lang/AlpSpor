@@ -39,6 +39,10 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .ad-active input{width:20px;height:20px;margin:0}
 .ad-active label{margin:0;font-size:14px}
 .ad-preview{width:100%;height:90px;object-fit:contain;background:#07111f;border:1px dashed #38516b;border-radius:7px;margin:5px 0 12px}
+.ad-find-row{display:flex;gap:8px;align-items:end}
+.ad-find-row>div{flex:1;min-width:0}
+.ad-find-row button{min-height:43px;white-space:nowrap;background:#29425d;color:#fff}
+.ad-help{font-size:12px;color:#9fb1c5;margin:4px 0 10px}
 #loginMessage,#formMessage,#cameraMessage,#adsMessage{margin-top:12px;font-size:14px}
 @media(max-width:600px){
  header{padding:14px 4%}
@@ -254,14 +258,47 @@ document.getElementById("startCamera").addEventListener("click",async()=>{
   }
 });
 
-function stopCamera(){
+async function stopCamera(){
   try{
     localStorage.setItem("alpsport_stop_camera",String(Date.now()));
   }catch(error){}
   if(publisherTab&&!publisherTab.closed){
     try{publisherTab.postMessage({type:"ALPSPORT_STOP"},"*");}catch(error){}
   }
-  message(cameraMessage,"Durdurma komutu gönderildi. Kamera sekmesinde yayının durduğunu kontrol et.");
+
+  const match=matches.find(item=>String(item.id)===String(selectedMatchId)&&item.status==="live")
+    ||matches.find(item=>item.status==="live");
+  if(!match){
+    message(cameraMessage,"Kamera durdurma komutu gönderildi. Şu anda veritabanında canlı yayın görünmüyor.","success");
+    return;
+  }
+
+  message(cameraMessage,"Yayın kapatılıyor ve izleyici ekranı güncelleniyor...");
+  try{
+    const response=await fetch("/api/matches",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({
+        id:match.id,
+        title:match.title||match.home_team+" - "+match.away_team,
+        home_team:match.home_team,
+        away_team:match.away_team,
+        home_logo:match.home_logo||"",
+        away_logo:match.away_logo||"",
+        stream_url:"",
+        match_time:match.match_time||new Date().toISOString(),
+        status:"upcoming"
+      })
+    });
+    const data=await response.json();
+    if(response.status===401){showLogin();throw new Error("Oturum sona erdi. Yeniden giriş yap.");}
+    if(!response.ok)throw new Error(data.error||"Yayın veritabanında kapatılamadı.");
+    await loadMatches();
+    message(cameraMessage,"Yayın kapatıldı. İzleyici ekranı canlı yayından çıkarıldı. Aynı takımlarla yeniden yayın başlatabilirsin.","success");
+  }catch(error){
+    message(cameraMessage,"Kamera durduruldu ancak yayın kaydı güncellenemedi: "+error.message,"error");
+  }
 }
 
 document.getElementById("stopCamera").addEventListener("click",stopCamera);
@@ -296,6 +333,14 @@ function renderAdFields(){
   document.getElementById("adsList").innerHTML=adSlots.map(ad=>`
     <div class="ad-item">
       <h3>${ad.name}</h3>
+      <div class="ad-find-row">
+        <div>
+          <label>Reklam verenin internet sitesi</label>
+          <input id="ad-${ad.id}-site" type="url" placeholder="https://ornek.com">
+        </div>
+        <button type="button" data-find-ad="${ad.id}">GÖRSELİ BUL</button>
+      </div>
+      <p class="ad-help">Site adresini girip Görseli Bul'a bas. Bulunabilirse reklam görseli otomatik eklenir.</p>
       <label>Reklam görselinin adresi</label>
       <input id="ad-${ad.id}-image" type="url" placeholder="https://ornek.com/reklam.jpg">
       <img id="ad-${ad.id}-preview" class="ad-preview" alt="Reklam ön izlemesi" style="display:none">
@@ -315,7 +360,47 @@ function renderAdFields(){
       preview.style.display=input.value.trim()?"block":"none";
       if(input.value.trim())preview.src=input.value.trim();
     });
+    document.querySelector('[data-find-ad="'+ad.id+'"]').addEventListener("click",()=>findAdImage(ad.id));
   });
+}
+
+async function findAdImage(slotId){
+  const site=document.getElementById("ad-"+slotId+"-site");
+  const image=document.getElementById("ad-"+slotId+"-image");
+  const target=document.getElementById("ad-"+slotId+"-link");
+  const preview=document.getElementById("ad-"+slotId+"-preview");
+  const button=document.querySelector('[data-find-ad="'+slotId+'"]');
+  const area=document.getElementById("adsMessage");
+  const url=site.value.trim();
+  if(!url){message(area,"Önce reklam verenin internet sitesi adresini gir.","error");site.focus();return;}
+  button.disabled=true;
+  button.textContent="ARANIYOR...";
+  message(area,"Reklam sitesinin görseli aranıyor...");
+  try{
+    const response=await fetch("/api/ads-preview",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({url})
+    });
+    const data=await response.json();
+    if(response.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
+    if(!response.ok)throw new Error(data.error||"Reklam görseli bulunamadı.");
+    target.value=data.target_url||url;
+    if(data.image_url){
+      image.value=data.image_url;
+      preview.src=data.image_url;
+      preview.style.display="block";
+      message(area,(data.title?data.title+" — ":"")+ "Reklam görseli bulundu. Kaydetmeyi unutma.","success");
+    }else{
+      message(area,data.message||"Otomatik görsel bulunamadı. Görsel adresini elle girebilirsin.","error");
+    }
+  }catch(error){
+    message(area,error.message,"error");
+  }finally{
+    button.disabled=false;
+    button.textContent="GÖRSELİ BUL";
+  }
 }
 
 async function loadAds(){
@@ -335,10 +420,12 @@ async function loadAds(){
     adSlots.forEach(slot=>{
       const ad=ads.find(item=>item.slot===slot.id);
       if(!ad)return;
+      const site=document.getElementById("ad-"+slot.id+"-site");
       const image=document.getElementById("ad-"+slot.id+"-image");
       const link=document.getElementById("ad-"+slot.id+"-link");
       const active=document.getElementById("ad-"+slot.id+"-active");
       const preview=document.getElementById("ad-"+slot.id+"-preview");
+      site.value=ad.target_url||"";
       image.value=ad.image_url||"";
       link.value=ad.target_url||"";
       active.checked=Number(ad.active)===1;
