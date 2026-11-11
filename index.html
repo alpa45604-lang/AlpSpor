@@ -613,10 +613,10 @@ async function loadTffStandings() {
     body.innerHTML =
       '<tr><td colspan="10">Puan durumu şu anda yüklenemiyor.</td></tr>';
     week.textContent = "VERİ YOK";
-  loadTffStandings();
-setInterval(loadTffStandings, 300000);
   }
  }
+loadTffStandings();
+setInterval(loadTffStandings, 300000);
 </script>
 </body>
 </html>
