@@ -44,6 +44,15 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .ad-find-row button{min-height:43px;white-space:nowrap;background:#29425d;color:#fff}
 .ad-help{font-size:12px;color:#9fb1c5;margin:4px 0 10px}
 #loginMessage,#formMessage,#cameraMessage,#adsMessage{margin-top:12px;font-size:14px}
+.quick-ad{background:#0b192a;border:1px solid #b8ff35;border-radius:10px;padding:14px;margin:12px 0 18px}
+.quick-ad h3{margin:0 0 8px;color:#b8ff35;font-size:16px}
+.quick-ad input,.quick-ad select{margin-bottom:8px}
+.quick-ad-preview{width:100%;height:110px;object-fit:contain;background:#07111f;border:1px dashed #38516b;border-radius:7px;margin:8px 0;display:none}
+.quick-ad-actions{display:flex;gap:8px;flex-wrap:wrap}
+.quick-ad-actions button{flex:1;min-width:130px}
+.ad-details{margin-top:12px}
+.ad-details summary{cursor:pointer;color:#b8ff35;padding:10px 0;font-weight:bold}
+
 @media(max-width:600px){
  header{padding:14px 4%}
  .logo{font-size:20px}
@@ -101,8 +110,33 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <section class="panel">
   <h2>Reklam Yönetimi</h2>
   <p>Oynatıcının üstünde 3, altında 3 dikdörtgen reklam alanı bulunur.</p>
-  <div id="adsList">Reklam alanları yükleniyor...</div>
-  <button id="saveAds" class="primary">6 REKLAMI KAYDET</button>
+  <div class="quick-ad">
+    <h3>Hızlı reklam ekle</h3>
+    <p class="ad-help">Sadece reklam verenin internet sitesi adresini gir. Görseli otomatik bulup reklamı seçtiğin alana ekleyelim.</p>
+    <label for="quickAdUrl">Reklam verenin web sitesi</label>
+    <input id="quickAdUrl" type="url" placeholder="https://ornek.com">
+    <label for="quickAdSlot">Reklamın gösterileceği yer</label>
+    <select id="quickAdSlot">
+      <option value="auto">Otomatik boş reklam alanı</option>
+      <option value="top1">Video üstü 1</option>
+      <option value="top2">Video üstü 2</option>
+      <option value="top3">Video üstü 3</option>
+      <option value="bottom1">Video altı 1</option>
+      <option value="bottom2">Video altı 2</option>
+      <option value="bottom3">Video altı 3</option>
+    </select>
+    <img id="quickAdPreview" class="quick-ad-preview" alt="Reklam ön izlemesi">
+    <div class="quick-ad-actions">
+      <button id="prepareQuickAd" type="button" class="secondary">SİTEYİ BUL</button>
+      <button id="publishQuickAd" type="button" class="primary" disabled>REKLAMI YAYINA AL</button>
+    </div>
+    <p class="ad-help">Not: Reklam görseli sitenin sosyal paylaşım görselinden (og:image) alınır. Site bu bilgiyi sunmuyorsa görsel otomatik bulunamayabilir.</p>
+  </div>
+  <details class="ad-details">
+    <summary>Gelişmiş reklam ayarları (6 alanı ayrı düzenle)</summary>
+    <div id="adsList">Reklam alanları yükleniyor...</div>
+    <button id="saveAds" class="primary">6 REKLAMI KAYDET</button>
+  </details>
   <div id="adsMessage"></div>
 </section>
 
@@ -402,6 +436,72 @@ async function findAdImage(slotId){
     button.textContent="GÖRSELİ BUL";
   }
 }
+
+
+let quickAdPrepared=null;
+document.getElementById("prepareQuickAd").addEventListener("click",async()=>{
+  const url=document.getElementById("quickAdUrl").value.trim();
+  const area=document.getElementById("adsMessage");
+  const button=document.getElementById("prepareQuickAd");
+  const publish=document.getElementById("publishQuickAd");
+  const preview=document.getElementById("quickAdPreview");
+  if(!url){message(area,"Önce reklam verenin internet sitesi adresini gir.","error");return;}
+  button.disabled=true;button.textContent="SİTE İNCELENİYOR...";publish.disabled=true;
+  quickAdPrepared=null;preview.style.display="none";
+  try{
+    const response=await fetch("/api/ads-preview",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({url})});
+    const data=await response.json();
+    if(response.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
+    if(!response.ok)throw new Error(data.error||"Site bilgileri alınamadı.");
+    if(!data.image_url)throw new Error(data.message||"Bu sitede otomatik reklam görseli bulunamadı.");
+    quickAdPrepared={url:data.target_url||url,image_url:data.image_url,title:data.title||""};
+    preview.src=data.image_url;preview.style.display="block";
+    publish.disabled=false;
+    message(area,(data.title?data.title+" — ":"")+"Görsel bulundu. Şimdi REKLAMI YAYINA AL'a bas.","success");
+  }catch(error){message(area,error.message,"error");}
+  finally{button.disabled=false;button.textContent="SİTEYİ BUL";}
+});
+document.getElementById("publishQuickAd").addEventListener("click",async()=>{
+  const area=document.getElementById("adsMessage");
+  const publish=document.getElementById("publishQuickAd");
+  if(!quickAdPrepared){message(area,"Önce siteyi bul düğmesine bas.","error");return;}
+  const chosen=document.getElementById("quickAdSlot").value;
+  const existing=adSlots.map(slot=>({
+    slot:slot.id,
+    image_url:document.getElementById("ad-"+slot.id+"-image").value.trim(),
+    target_url:document.getElementById("ad-"+slot.id+"-link").value.trim(),
+    active:document.getElementById("ad-"+slot.id+"-active").checked
+  }));
+  let destination=chosen;
+  if(chosen==="auto"){
+    const empty=existing.find(ad=>!ad.image_url||!ad.target_url||!ad.active);
+    destination=empty?empty.slot:"top1";
+  }
+  const target=existing.find(ad=>ad.slot===destination);
+  target.image_url=quickAdPrepared.image_url;
+  target.target_url=quickAdPrepared.url;
+  target.active=true;
+  publish.disabled=true;publish.textContent="KAYDEDİLİYOR...";
+  try{
+    const response=await fetch("/api/ads",{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({ads:existing})});
+    const data=await response.json();
+    if(response.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
+    if(!response.ok)throw new Error(data.error||"Reklam kaydedilemedi.");
+    const image=document.getElementById("ad-"+destination+"-image");
+    const link=document.getElementById("ad-"+destination+"-link");
+    const site=document.getElementById("ad-"+destination+"-site");
+    const active=document.getElementById("ad-"+destination+"-active");
+    const oldPreview=document.getElementById("ad-"+destination+"-preview");
+    image.value=quickAdPrepared.image_url;link.value=quickAdPrepared.url;site.value=quickAdPrepared.url;active.checked=true;
+    oldPreview.src=quickAdPrepared.image_url;oldPreview.style.display="block";
+    const label=adSlots.find(slot=>slot.id===destination)?.name||destination;
+    message(area,"Reklam yayına alındı: "+label,"success");
+    document.getElementById("quickAdUrl").value="";
+    document.getElementById("quickAdPreview").style.display="none";
+    quickAdPrepared=null;
+  }catch(error){message(area,error.message,"error");}
+  finally{publish.disabled=!quickAdPrepared;publish.textContent="REKLAMI YAYINA AL";}
+});
 
 async function loadAds(){
   const area=document.getElementById("adsMessage");
