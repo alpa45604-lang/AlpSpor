@@ -103,39 +103,15 @@ button:disabled{opacity:.55;cursor:not-allowed}
 </section>
 
 <section class="panel" id="matchFormPanel">
-  <h2 id="formTitle">Yeni Maç / Yayın Ekle</h2>
+  <h2 id="formTitle">Yayına Hazırlık</h2>
+  <p>Yayına başlamadan önce yalnızca iki takımın adını yazıp kaydet. Başlık, tarih, logolar ve yayın adresi otomatik ayarlanır.</p>
   <form id="matchForm">
     <input type="hidden" id="matchId">
-
-    <label for="title">Yayın başlığı</label>
-    <input id="title" required placeholder="Örnek: Akşam Maçı">
-
-    <label for="homeTeam">Ev sahibi takım</label>
-    <input id="homeTeam" required>
-
-    <label for="awayTeam">Deplasman takımı</label>
-    <input id="awayTeam" required>
-
-    <label for="homeLogo">Ev sahibi takım görsel adresi</label>
-    <input id="homeLogo" type="url">
-
-    <label for="awayLogo">Deplasman takım görsel adresi</label>
-    <input id="awayLogo" type="url">
-
-    <label for="matchTime">Maç tarihi ve saati</label>
-    <input id="matchTime" type="datetime-local" required>
-
-    <label for="streamUrl">Yayın adresi</label>
-    <input id="streamUrl" type="url" placeholder="Kamera açılınca otomatik doldurulur">
-
-    <label for="matchStatus">Maç durumu</label>
-    <select id="matchStatus">
-      <option value="upcoming">Yaklaşan</option>
-      <option value="live">Canlı</option>
-      <option value="finished">Tamamlandı</option>
-    </select>
-
-    <button class="primary" type="submit" id="saveButton">MAÇI KAYDET</button>
+    <label for="homeTeam">1. Takım</label>
+    <input id="homeTeam" required maxlength="100" placeholder="Örnek: Galatasaray">
+    <label for="awayTeam">2. Takım</label>
+    <input id="awayTeam" required maxlength="100" placeholder="Örnek: Fenerbahçe">
+    <button class="primary" type="submit" id="saveButton">TAKIMLARI KAYDET</button>
     <button class="secondary hidden" type="button" id="cancelEdit" style="width:100%;margin-top:9px">DÜZENLEMEYİ İPTAL ET</button>
   </form>
   <div id="formMessage"></div>
@@ -161,6 +137,7 @@ let matches=[];
 let statsTimer=null;
 let publisherTab=null;
 let roomId="";
+let selectedMatchId=localStorage.getItem("alpsport_prepared_match_id")||"";
 
 function safe(value){
   return String(value??"").replace(/[&<>"']/g,c=>({
@@ -234,97 +211,24 @@ function getRoomId(){
 }
 
 async function saveStreamToSingleLiveMatch(watchUrl){
-  const response=await fetch("/api/matches",{
-    cache:"no-store",
-    credentials:"same-origin"
-  });
+  const response=await fetch("/api/matches",{cache:"no-store",credentials:"same-origin"});
   const data=await response.json();
-
-  if(response.status===401){
-    showLogin();
-    throw new Error("Yönetici oturumu sona erdi. Yeniden giriş yap.");
-  }
+  if(response.status===401){showLogin();throw new Error("Yönetici oturumu sona erdi. Yeniden giriş yap.");}
   if(!response.ok)throw new Error(data.error||"Maç listesi alınamadı.");
-
   const allMatches=Array.isArray(data.matches)?data.matches:[];
-  const liveMatches=allMatches.filter(match=>match.status==="live");
-  const upcomingMatches=allMatches
-    .filter(match=>match.status==="upcoming")
-    .sort((a,b)=>new Date(a.match_time)-new Date(b.match_time));
-
-  if(liveMatches.length>1){
-    return "MORE_THAN_ONE_LIVE_MATCH";
-  }
-
-  if(liveMatches.length===1){
-    const match=liveMatches[0];
-    const saveResponse=await fetch("/api/matches",{
-      method:"PUT",
-      headers:{"Content-Type":"application/json"},
-      credentials:"same-origin",
-      body:JSON.stringify({
-        id:match.id,
-        title:match.title,
-        home_team:match.home_team,
-        away_team:match.away_team,
-        home_logo:match.home_logo||"",
-        away_logo:match.away_logo||"",
-        match_time:match.match_time,
-        stream_url:watchUrl,
-        status:"live"
-      })
-    });
-    const saved=await saveResponse.json();
-    if(saveResponse.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
-    if(!saveResponse.ok)throw new Error(saved.error||"Yayın adresi maça kaydedilemedi.");
-  }else if(upcomingMatches.length===1){
-    const match=upcomingMatches[0];
-    const saveResponse=await fetch("/api/matches",{
-      method:"PUT",
-      headers:{"Content-Type":"application/json"},
-      credentials:"same-origin",
-      body:JSON.stringify({
-        id:match.id,
-        title:match.title,
-        home_team:match.home_team,
-        away_team:match.away_team,
-        home_logo:match.home_logo||"",
-        away_logo:match.away_logo||"",
-        match_time:match.match_time,
-        stream_url:watchUrl,
-        status:"live"
-      })
-    });
-    const saved=await saveResponse.json();
-    if(saveResponse.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
-    if(!saveResponse.ok)throw new Error(saved.error||"Yayın adresi maça kaydedilemedi.");
-  }else{
-    const now=new Date();
-    const saveResponse=await fetch("/api/matches",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      credentials:"same-origin",
-      body:JSON.stringify({
-        title:"AlpSport Canlı Yayın",
-        home_team:"Canlı Yayın",
-        away_team:"AlpSport",
-        home_logo:"",
-        away_logo:"",
-        match_time:now.toISOString(),
-        stream_url:watchUrl,
-        status:"live"
-      })
-    });
-    const saved=await saveResponse.json();
-    if(saveResponse.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
-    if(!saveResponse.ok)throw new Error(saved.error||"Otomatik canlı yayın kaydı oluşturulamadı.");
-  }
-
-  await loadMatches();
-  return "SAVED";
+  let match=allMatches.find(item=>String(item.id)===String(selectedMatchId));
+  if(!match){const prepared=allMatches.filter(item=>item.status==="upcoming"&&!item.stream_url);if(prepared.length===1)match=prepared[0];}
+  if(!match)throw new Error("Önce aşağıya iki takımın adını yazıp TAKIMLARI KAYDET düğmesine bas.");
+  const saveResponse=await fetch("/api/matches",{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({id:match.id,title:match.home_team+" - "+match.away_team,home_team:match.home_team,away_team:match.away_team,home_logo:match.home_logo||"",away_logo:match.away_logo||"",match_time:match.match_time||new Date().toISOString(),stream_url:watchUrl,status:"live"})});
+  const saved=await saveResponse.json();
+  if(saveResponse.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
+  if(!saveResponse.ok)throw new Error(saved.error||"Yayın maça kaydedilemedi.");
+  selectedMatchId=String(match.id);localStorage.setItem("alpsport_prepared_match_id",selectedMatchId);
+  await loadMatches();return "SAVED";
 }
-
 document.getElementById("startCamera").addEventListener("click",async()=>{
+  const prepared=matches.find(item=>String(item.id)===String(selectedMatchId)&&item.status!=="finished");
+  if(!prepared){message(cameraMessage,"Önce iki takımın adını girip TAKIMLARI KAYDET düğmesine bas.","error");document.getElementById("matchFormPanel").scrollIntoView({behavior:"smooth"});return;}
   roomId=getRoomId();
 
   const watchUrl="https://vdo.ninja/?view="+encodeURIComponent(roomId)+"&cleanoutput=1&autoplay=1";
@@ -574,8 +478,8 @@ function stopStatsRefresh(){
 function resetForm(){
   document.getElementById("matchForm").reset();
   document.getElementById("matchId").value="";
-  document.getElementById("formTitle").textContent="Yeni Maç / Yayın Ekle";
-  document.getElementById("saveButton").textContent="MAÇI KAYDET";
+  document.getElementById("formTitle").textContent="Yayına Hazırlık";
+  document.getElementById("saveButton").textContent="TAKIMLARI KAYDET";
   document.getElementById("cancelEdit").classList.add("hidden");
   message(formMessage,"");
 }
@@ -583,80 +487,35 @@ function resetForm(){
 function editMatch(id){
   const match=matches.find(item=>String(item.id)===String(id));
   if(!match)return;
-
   document.getElementById("matchId").value=match.id;
-  document.getElementById("title").value=match.title||"";
   document.getElementById("homeTeam").value=match.home_team||"";
   document.getElementById("awayTeam").value=match.away_team||"";
-  document.getElementById("homeLogo").value=match.home_logo||"";
-  document.getElementById("awayLogo").value=match.away_logo||"";
-  document.getElementById("streamUrl").value=match.stream_url||"";
-  document.getElementById("matchStatus").value=match.status||"upcoming";
-
-  const date=new Date(match.match_time);
-  const localDate=new Date(date.getTime()-date.getTimezoneOffset()*60000);
-  document.getElementById("matchTime").value=localDate.toISOString().slice(0,16);
-
-  document.getElementById("formTitle").textContent="Maçı Düzenle";
-  document.getElementById("saveButton").textContent="DEĞİŞİKLİKLERİ KAYDET";
+  document.getElementById("formTitle").textContent="Takım Adlarını Düzenle";
+  document.getElementById("saveButton").textContent="TAKIM ADLARINI GÜNCELLE";
   document.getElementById("cancelEdit").classList.remove("hidden");
   document.getElementById("matchFormPanel").scrollIntoView({behavior:"smooth"});
 }
-
 document.getElementById("cancelEdit").addEventListener("click",resetForm);
 
 document.getElementById("matchForm").addEventListener("submit",async event=>{
   event.preventDefault();
-
   const id=document.getElementById("matchId").value;
-  const dateValue=document.getElementById("matchTime").value;
-
-  if(!dateValue){
-    message(formMessage,"Maç tarihini ve saatini gir.","error");
-    return;
-  }
-
-  const body={
-    title:document.getElementById("title").value.trim(),
-    home_team:document.getElementById("homeTeam").value.trim(),
-    away_team:document.getElementById("awayTeam").value.trim(),
-    home_logo:document.getElementById("homeLogo").value.trim(),
-    away_logo:document.getElementById("awayLogo").value.trim(),
-    match_time:new Date(dateValue).toISOString(),
-    stream_url:document.getElementById("streamUrl").value.trim(),
-    status:document.getElementById("matchStatus").value
-  };
-
-  if(body.status==="live"&&!body.stream_url){
-    message(formMessage,"Canlı yayın için önce kamerayı aç.","error");
-    return;
-  }
-
-  message(formMessage,"Maç kaydediliyor...");
-
+  const home=document.getElementById("homeTeam").value.trim();
+  const away=document.getElementById("awayTeam").value.trim();
+  if(!home||!away||home===away){message(formMessage,"İki farklı takımın adını gir.","error");return;}
+  const existing=id?matches.find(item=>String(item.id)===String(id)):null;
+  const body={title:home+" - "+away,home_team:home,away_team:away,home_logo:existing?.home_logo||"",away_logo:existing?.away_logo||"",match_time:existing?.match_time||new Date().toISOString(),stream_url:existing?.stream_url||"",status:existing?.status||"upcoming"};
+  message(formMessage,"Takımlar kaydediliyor...");
   try{
-    const response=await fetch("/api/matches",{
-      method:id?"PUT":"POST",
-      headers:{"Content-Type":"application/json"},
-      credentials:"same-origin",
-      body:JSON.stringify(id?{...body,id}:body)
-    });
+    const response=await fetch("/api/matches",{method:id?"PUT":"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify(id?{...body,id}:body)});
     const data=await response.json();
-
-    if(response.status===401){
-      showLogin();
-      throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");
-    }
-    if(!response.ok)throw new Error(data.error||"Maç kaydedilemedi.");
-
-    message(formMessage,data.message||"Maç kaydedildi.","success");
-    resetForm();
-    await loadMatches();
-  }catch(error){
-    message(formMessage,error.message,"error");
-  }
+    if(response.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
+    if(!response.ok)throw new Error(data.error||"Takımlar kaydedilemedi.");
+    selectedMatchId=String(id||data.id||"");if(selectedMatchId)localStorage.setItem("alpsport_prepared_match_id",selectedMatchId);
+    message(formMessage,"Takımlar kaydedildi. Şimdi KAMERAYI AÇ / YAYINI BAŞLAT düğmesine bas.","success");
+    if(!id)resetForm();await loadMatches();
+  }catch(error){message(formMessage,error.message,"error");}
 });
-
 document.getElementById("matchesList").addEventListener("click",async event=>{
   const editButton=event.target.closest("[data-edit]");
   const deleteButton=event.target.closest("[data-delete]");
