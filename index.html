@@ -42,7 +42,7 @@
 *{box-sizing:border-box}
 html{background:#07111f}
 body{margin:0;background:#07111f;color:#fff;font-family:Arial,sans-serif}
-header{background:#0c1b2e;padding:17px 5%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #20334a}
+header{position:sticky;top:0;z-index:50;background:rgba(12,27,46,.96);backdrop-filter:blur(12px);padding:14px 5%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #20334a}
 .logo{font-size:27px;font-weight:900;color:#b8ff35}
 .logo span{color:#fff}
 nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
@@ -52,6 +52,13 @@ nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
 .hero p{color:#aab9ca;line-height:1.5}
 .container{width:94%;max-width:1100px;margin:25px auto}
 .section{margin-bottom:35px}
+.match-tools{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:9px;align-items:end;background:#102137;border:1px solid #29425d;border-radius:12px;padding:12px;margin:18px 0}
+.match-tools label{display:block;color:#aab9ca;font-size:12px;margin:0 0 6px}
+.match-tools input{width:100%;min-width:0;padding:12px;background:#07111f;color:#fff;border:1px solid #38516b;border-radius:7px;font-size:15px}
+.match-tools button{min-height:43px;padding:10px 13px;white-space:nowrap}
+.match-tools-status{grid-column:1/-1;margin:0;color:#9fb1c5;font-size:12px}
+.utility-button{background:#29425d;color:#fff}
+.share-button{background:#29425d;color:#fff}
 .swipe-shell{width:100%;min-width:0}
 .swipe-hint{color:#9fb1c5;font-size:12px;text-align:center;margin:0 0 10px}
 .swipe-track{display:flex;gap:0;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-behavior:smooth;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -106,11 +113,14 @@ footer{margin-top:50px;padding:28px 5%;background:#0c1b2e;color:#8295aa;text-ali
 #tff-puan th,#tff-puan td{padding:12px 8px;border-bottom:1px solid #29425d}
 #tff-puan th{background:#0b192a;color:#b8ff35}
 @media(max-width:600px){
-header{padding:14px 4%}
+header{padding:12px 4%}
 .logo{font-size:22px}
 nav a{font-size:11px;margin-left:8px}
 .hero{padding:30px 5%}
 .container{width:94%;margin:18px auto}
+.match-tools{grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px}
+.match-tools button:last-of-type{grid-column:2}
+.match-tools-status{font-size:11px}
 .section-title h2{font-size:19px}
 .ad-slot{height:90px}
 .player-card{padding:9px}
@@ -144,6 +154,15 @@ nav a{font-size:11px;margin-left:8px}
  <h1 id="alpsport-ana-baslik" style="font-size:clamp(25px,4vw,36px);line-height:1.2;margin:0 0 12px">Türkiye Futbolu ve Canlı Yayın Platformu</h1>
  <p style="color:#c0ccda;line-height:1.7;margin:0">AlpSport; Türkiye futboluna ait maç bilgilerini, TFF fikstürünü ve puan durumunu tek yerde takip etmenize yardımcı olur. Ayrıca kendi canlı yayınınızı AlpSport üzerinden izleyicilerle aynı sayfada paylaşabilirsiniz.</p>
 </section>
+<section class="match-tools" aria-label="Maç arama ve yenileme">
+ <div>
+  <label for="matchSearch">Takım veya lig ara</label>
+  <input id="matchSearch" type="search" placeholder="Örn. Galatasaray, Süper Lig..." autocomplete="off">
+ </div>
+ <button id="refreshAll" type="button">YENİLE</button>
+ <button id="clearMatchSearch" class="utility-button" type="button">TEMİZLE</button>
+ <p class="match-tools-status" id="matchToolsStatus" role="status" aria-live="polite">Maç verileri güncel tutulur. Aradığın takımı buradan bulabilirsin.</p>
+</section>
 <div class="swipe-shell">
  <div class="swipe-hint">CANLI MAÇLAR ilk sayfada • Fikstür için sağa kaydır</div>
  <div class="swipe-track" id="matchSwipeTrack">
@@ -175,6 +194,7 @@ nav a{font-size:11px;margin-left:8px}
      </div>
      <div class="player-controls">
       <button id="fullscreenButton" type="button">TAM EKRAN</button>
+      <button id="shareSiteButton" class="share-button" type="button">SİTEYİ PAYLAŞ</button>
      </div>
      <div class="stats" id="adminViewerStats" hidden>
       <div class="stat"><small>Şu an izleyen</small><strong id="activeViewers">0</strong></div>
@@ -253,7 +273,7 @@ nav a{font-size:11px;margin-left:8px}
  <h2 id="alpsport-hakkinda-baslik">AlpSport'ta neler bulabilirsiniz?</h2>
  <p style="color:#c0ccda;line-height:1.7">AlpSport ana sayfasında güncel futbol karşılaşmalarına ilişkin bilgiler, yaklaşan maçlar, Türkiye Futbol Federasyonu fikstürü ve puan durumu bölümleri yer alır. Maç verileri bağlı veri kaynaklarından alınır; erişilemeyen veriler geçici olarak görüntülenmeyebilir.</p>
  <p style="color:#c0ccda;line-height:1.7">AlpSport canlı yayın alanı, yayın yöneticisinin başlattığı yayını ziyaretçilerin aynı web sayfası üzerinden takip etmesi için hazırlanmıştır. AlpSport, üçüncü taraf maç yayınlarını izletme hizmeti olarak sunulmaz.</p>
- <p style="color:#c0ccda;line-height:1.7">Platformun kullanımı ve kişisel verilerin işlenmesi hakkında ayrıntılar için <a href="/hakkimizda.html" style="color:#b8ff35">Hakkımızda</a>, <a href="/gizlilik.html" style="color:#b8ff35">Gizlilik Politikası</a> ve <a href="/kullanim-kosullari.html" style="color:#b8ff35">Kullanım Koşulları</a> sayfalarını inceleyebilirsiniz. Futbol hakkında temel bilgiler için <a href="/futbol-rehberi.html" style="color:#b8ff35">Futbol Rehberi</a> sayfasını ziyaret edin.</p>
+ <p style="color:#c0ccda;line-height:1.7">Platformun kullanımı ve kişisel verilerin işlenmesi hakkında ayrıntılar için <a href="/hakkimizda" style="color:#b8ff35">Hakkımızda</a>, <a href="/gizlilik" style="color:#b8ff35">Gizlilik Politikası</a> ve <a href="/kullanim-kosullari" style="color:#b8ff35">Kullanım Koşulları</a> sayfalarını inceleyebilirsiniz. Futbol hakkında temel bilgiler için <a href="/futbol-rehberi" style="color:#b8ff35">Futbol Rehberi</a> sayfasını ziyaret edin.</p>
 </section>
 </main>
 
@@ -355,6 +375,9 @@ async function loadAutomatic(){
   const upcoming=matches.filter(m=>!["IN_PLAY","PAUSED","LIVE","EXTRA_TIME","PENALTY_SHOOTOUT","FINISHED","CANCELLED"].includes(String(m.status)));
   liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda veri sağlayıcısında canlı maç görünmüyor.</div>';
   upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan maç bulunamadı.</div>';
+  filterAutomaticMatches();
+  const status=document.getElementById("matchToolsStatus");
+  if(status)status.textContent="Son kontrol: "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})+" · "+live.length+" canlı, "+upcoming.length+" yaklaşan maç."; 
  }catch(error){
   liveArea.innerHTML='<div class="empty">Canlı maç verisi şu anda alınamıyor.</div>';
   upcomingArea.innerHTML='<div class="empty">Fikstür verisi şu anda alınamıyor.</div>';
@@ -657,6 +680,54 @@ async function loadAds(){
   document.getElementById("bottomAds").innerHTML=[render("bottom1",4),render("bottom2",5),render("bottom3",6)].join("");
  }catch(error){}
 }
+
+/* KOLAY MAÇ BULMA VE PAYLAŞIM */
+function filterAutomaticMatches(){
+ const input=document.getElementById("matchSearch");
+ const query=(input?.value||"").trim().toLocaleLowerCase("tr-TR");
+ let visible=0;
+ [liveArea,upcomingArea].forEach(area=>{
+  area.querySelectorAll(".match").forEach(card=>{
+   const show=!query||card.textContent.toLocaleLowerCase("tr-TR").includes(query);
+   card.hidden=!show;
+   if(show)visible++;
+  });
+ });
+ const status=document.getElementById("matchToolsStatus");
+ if(status&&query)status.textContent=visible+" eşleşme bulundu: "+query;
+}
+document.getElementById("matchSearch").addEventListener("input",filterAutomaticMatches);
+document.getElementById("clearMatchSearch").addEventListener("click",()=>{
+ document.getElementById("matchSearch").value="";
+ filterAutomaticMatches();
+ document.getElementById("matchSearch").focus();
+});
+document.getElementById("refreshAll").addEventListener("click",async()=>{
+ const button=document.getElementById("refreshAll");
+ button.disabled=true;
+ button.textContent="YENİLENİYOR...";
+ const status=document.getElementById("matchToolsStatus");
+ if(status)status.textContent="Maçlar, yayın ve TFF bilgileri yenileniyor...";
+ try{
+  await Promise.all([loadAutomatic(),loadAdminMatches(),loadTffFixtures(tffCurrentWeek),loadTffStandings(),loadAds()]);
+  if(status)status.textContent="Tüm bilgiler yenilendi: "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+ }finally{
+  button.disabled=false;
+  button.textContent="YENİLE";
+ }
+});
+document.getElementById("shareSiteButton").addEventListener("click",async()=>{
+ const shareData={title:"AlpSport | Türkiye Futbolu ve Canlı Yayın",text:"Canlı maçlar, TFF fikstürü ve puan durumu AlpSport'ta.",url:location.origin+"/"};
+ try{
+  if(navigator.share)await navigator.share(shareData);
+  else{
+   await navigator.clipboard.writeText(shareData.url);
+   alert("AlpSport bağlantısı kopyalandı.");
+  }
+ }catch(error){
+  if(error?.name!=="AbortError")alert("Paylaşım açılamadı. Bağlantı: "+shareData.url);
+ }
+});
 
 /* İLK YÜKLEME */
 checkAdminViewerAccess();
