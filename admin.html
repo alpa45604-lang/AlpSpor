@@ -79,7 +79,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 
 <section class="panel">
   <h2>Telefon Kamerasından Canlı Yayın</h2>
-  <p>Kamera ayrı bir sekmede açılır. Yayını başlattıktan sonra bu sayfayı kapatma; kamera sekmesini açık tut.</p>
+  <p>Kamerayı başlatınca yayın tek canlı maç varsa veya yalnızca bir yaklaşan maç varsa otomatik AlpSport'a kaydedilir. Ziyaretçilerin ayrıca adres kopyalaması gerekmez; ana sayfa yayını otomatik açar. Kamera sekmesini açık tut.</p>
 
   <div class="camera-buttons">
     <button id="startCamera" class="primary">KAMERAYI AÇ / YAYINI BAŞLAT</button>
@@ -242,21 +242,28 @@ async function saveStreamToSingleLiveMatch(watchUrl){
 
   if(response.status===401){
     showLogin();
-    throw new Error("Yönetici oturumu sona ermiş. Yeniden giriş yap.");
+    throw new Error("Yönetici oturumu sona erdi. Yeniden giriş yap.");
   }
   if(!response.ok)throw new Error(data.error||"Maç listesi alınamadı.");
 
-  const liveMatches=(data.matches||[]).filter(match=>match.status==="live");
+  const allMatches=Array.isArray(data.matches)?data.matches:[];
+  const liveMatches=allMatches.filter(match=>match.status==="live");
+  const upcomingMatches=allMatches
+    .filter(match=>match.status==="upcoming")
+    .sort((a,b)=>new Date(a.match_time)-new Date(b.match_time));
 
-  if(liveMatches.length===0){
+  let match=null;
+  if(liveMatches.length===1){
+    match=liveMatches[0];
+  }else if(liveMatches.length>1){
+    return "MORE_THAN_ONE_LIVE_MATCH";
+  }else if(upcomingMatches.length===1){
+    match=upcomingMatches[0];
+  }else if(upcomingMatches.length>1){
+    return "CHOOSE_MATCH";
+  }else{
     return "NO_LIVE_MATCH";
   }
-
-  if(liveMatches.length>1){
-    return "MORE_THAN_ONE_LIVE_MATCH";
-  }
-
-  const match=liveMatches[0];
 
   const saveResponse=await fetch("/api/matches",{
     method:"PUT",
@@ -276,7 +283,6 @@ async function saveStreamToSingleLiveMatch(watchUrl){
   });
 
   const saved=await saveResponse.json();
-
   if(saveResponse.status===401){
     showLogin();
     throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");
@@ -314,8 +320,11 @@ document.getElementById("startCamera").addEventListener("click",async()=>{
       message(cameraMessage,"Kamera açıldı. Henüz canlı maç yok. Aşağıdaki maç formunu doldur, yayın adresi hazır; maç durumunu CANLI seçip kaydet.","error");
       document.getElementById("matchStatus").value="live";
       document.getElementById("matchFormPanel").scrollIntoView({behavior:"smooth"});
+    }else if(result==="CHOOSE_MATCH"){
+      message(cameraMessage,"Birden fazla yaklaşan maç var. Yayının doğru maça bağlanması için ilgili maçı aşağıdaki listeden CANLI durumuna getirip tekrar başlat.","error");
+      document.getElementById("matchesList").scrollIntoView({behavior:"smooth"});
     }else{
-      message(cameraMessage,"Kamera açıldı fakat birden fazla canlı maç var. Yanlış maça bağlamamak için yayın adresini otomatik kaydetmedim. İlgili maçı aşağıdan düzenleyip yayın adresini ekle.","error");
+      message(cameraMessage,"Birden fazla canlı maç var. Yanlış maça bağlamamak için yayın adresini otomatik kaydetmedim. İlgili maçı aşağıdan düzenleyip yayın adresini ekle.","error");
     }
   }catch(error){
     message(cameraMessage,"Kamera açıldı fakat kayıt sırasında sorun oluştu: "+error.message,"error");
