@@ -252,42 +252,73 @@ async function saveStreamToSingleLiveMatch(watchUrl){
     .filter(match=>match.status==="upcoming")
     .sort((a,b)=>new Date(a.match_time)-new Date(b.match_time));
 
-  let match=null;
-  if(liveMatches.length===1){
-    match=liveMatches[0];
-  }else if(liveMatches.length>1){
+  if(liveMatches.length>1){
     return "MORE_THAN_ONE_LIVE_MATCH";
+  }
+
+  if(liveMatches.length===1){
+    const match=liveMatches[0];
+    const saveResponse=await fetch("/api/matches",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({
+        id:match.id,
+        title:match.title,
+        home_team:match.home_team,
+        away_team:match.away_team,
+        home_logo:match.home_logo||"",
+        away_logo:match.away_logo||"",
+        match_time:match.match_time,
+        stream_url:watchUrl,
+        status:"live"
+      })
+    });
+    const saved=await saveResponse.json();
+    if(saveResponse.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
+    if(!saveResponse.ok)throw new Error(saved.error||"Yayın adresi maça kaydedilemedi.");
   }else if(upcomingMatches.length===1){
-    match=upcomingMatches[0];
-  }else if(upcomingMatches.length>1){
-    return "CHOOSE_MATCH";
+    const match=upcomingMatches[0];
+    const saveResponse=await fetch("/api/matches",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({
+        id:match.id,
+        title:match.title,
+        home_team:match.home_team,
+        away_team:match.away_team,
+        home_logo:match.home_logo||"",
+        away_logo:match.away_logo||"",
+        match_time:match.match_time,
+        stream_url:watchUrl,
+        status:"live"
+      })
+    });
+    const saved=await saveResponse.json();
+    if(saveResponse.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
+    if(!saveResponse.ok)throw new Error(saved.error||"Yayın adresi maça kaydedilemedi.");
   }else{
-    return "NO_LIVE_MATCH";
+    const now=new Date();
+    const saveResponse=await fetch("/api/matches",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({
+        title:"AlpSport Canlı Yayın",
+        home_team:"Canlı Yayın",
+        away_team:"AlpSport",
+        home_logo:"",
+        away_logo:"",
+        match_time:now.toISOString(),
+        stream_url:watchUrl,
+        status:"live"
+      })
+    });
+    const saved=await saveResponse.json();
+    if(saveResponse.status===401){showLogin();throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");}
+    if(!saveResponse.ok)throw new Error(saved.error||"Otomatik canlı yayın kaydı oluşturulamadı.");
   }
-
-  const saveResponse=await fetch("/api/matches",{
-    method:"PUT",
-    headers:{"Content-Type":"application/json"},
-    credentials:"same-origin",
-    body:JSON.stringify({
-      id:match.id,
-      title:match.title,
-      home_team:match.home_team,
-      away_team:match.away_team,
-      home_logo:match.home_logo||"",
-      away_logo:match.away_logo||"",
-      match_time:match.match_time,
-      stream_url:watchUrl,
-      status:"live"
-    })
-  });
-
-  const saved=await saveResponse.json();
-  if(saveResponse.status===401){
-    showLogin();
-    throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");
-  }
-  if(!saveResponse.ok)throw new Error(saved.error||"Yayın adresi maça kaydedilemedi.");
 
   await loadMatches();
   return "SAVED";
@@ -320,11 +351,8 @@ document.getElementById("startCamera").addEventListener("click",async()=>{
       message(cameraMessage,"Kamera açıldı. Henüz canlı maç yok. Aşağıdaki maç formunu doldur, yayın adresi hazır; maç durumunu CANLI seçip kaydet.","error");
       document.getElementById("matchStatus").value="live";
       document.getElementById("matchFormPanel").scrollIntoView({behavior:"smooth"});
-    }else if(result==="CHOOSE_MATCH"){
-      message(cameraMessage,"Birden fazla yaklaşan maç var. Yayının doğru maça bağlanması için ilgili maçı aşağıdaki listeden CANLI durumuna getirip tekrar başlat.","error");
-      document.getElementById("matchesList").scrollIntoView({behavior:"smooth"});
     }else{
-      message(cameraMessage,"Birden fazla canlı maç var. Yanlış maça bağlamamak için yayın adresini otomatik kaydetmedim. İlgili maçı aşağıdan düzenleyip yayın adresini ekle.","error");
+      message(cameraMessage,"Birden fazla canlı maç var. Yanlış maça bağlamamak için yayın adresini otomatik kaydetmedim. Önce diğer canlı yayınları kontrol et.","error");
     }
   }catch(error){
     message(cameraMessage,"Kamera açıldı fakat kayıt sırasında sorun oluştu: "+error.message,"error");
