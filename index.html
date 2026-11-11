@@ -602,9 +602,7 @@ async function loadTffFixtures(requestedWeek = null) {
     const away = safe(match.deplasman || "Deplasman");
     const date = safe(match.tarih || "Tarih belirtilmedi");
     const time = safe(match.saat || "");
-    const matchUrl = /^https:\/\//i.test(match.mac_url || "")
-     ? '<a href="' + safe(match.mac_url) + '" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:12px;color:#b8ff35;text-decoration:none">Maç bilgisi</a>'
-     : "";
+    const matchUrl = "";
     return '<article class="match">' +
      '<div class="match-top"><span>Türkiye Futbol Federasyonu</span><span>' + date + '</span></div>' +
      '<div class="teams"><div class="team">' + home + '</div><div class="vs">VS</div><div class="team">' + away + '</div></div>' +
