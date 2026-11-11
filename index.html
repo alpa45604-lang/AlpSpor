@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07111f">
 <title>AlpSport | Canlı Spor Merkezi</title>
-<meta name="description" content="AlpSport; Türkiye futbol ligleri için canlı skor, fikstür, puan durumu, maç sonuçları ve yayın bilgilerini tek yerde sunar.">
+<meta name="description" content="AlpSport, kendi canlı yayınınızı açıp ziyaretçilerle paylaşabileceğiniz bağımsız bir canlı yayın platformudur.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://alpsportt.pages.dev/">
 <meta name="google-site-verification" content="0txtNmWYUTWq0oQGuT3ZM-h72jprs3xmvS81yCnNOKg" />
@@ -136,7 +136,7 @@ nav a{font-size:11px;margin-left:8px}
       <span class="live-label" id="playerStatus">● BEKLENİYOR</span>
      </div>
      <div class="player-frame-wrap" id="playerWrap">
-      <div class="player-empty">Şu anda AlpSport üzerinden başlatılmış canlı yayın bulunmuyor.</div>
+      <div class="player-empty">Henüz yönetici tarafından canlı yayın başlatılmadı.</div>
      </div>
      <div class="player-controls">
       <button id="fullscreenButton" type="button">TAM EKRAN</button>
@@ -154,9 +154,9 @@ nav a{font-size:11px;margin-left:8px}
    </section>
 
    <section class="section">
-    <div class="section-title"><h2>AlpSport Yayınları</h2></div>
+    <div class="section-title"><h2>AlpSport Canlı Yayını</h2></div>
     <div class="matches" id="adminMatches">
-     <div class="empty">Yayınlar yükleniyor...</div>
+     <div class="empty">Canlı yayın bilgisi yükleniyor...</div>
     </div>
    </section>
   </div>
@@ -217,8 +217,8 @@ nav a{font-size:11px;margin-left:8px}
 
 <footer>
  <div class="logo">ALP<span>SPORT</span></div>
- <p>Türkiye futbol ligleri için canlı skor, fikstür ve puan durumu merkezi.</p>
- <p><a href="/hakkimizda.html" style="color:#b8ff35">Hakkımızda</a> · <a href="/gizlilik.html" style="color:#b8ff35">Gizlilik Politikası</a> · <a href="/kullanim-kosullari.html" style="color:#b8ff35">Kullanım Koşulları</a></p>
+ <p>AlpSport, kendi canlı yayınınızı açıp izleyicilerle aynı sayfada buluşturur.</p>
+ <p><a href="/hakkimizda.html" style="color:#b8ff35">Hakkımızda</a> · <a href="/gizlilik.html" style="color:#b8ff35">Gizlilik Politikası</a> · <a href="/kullanim-kosullari.html" style="color:#b8ff35">Kullanım Koşulları</a> · <a href="/futbol-rehberi.html" style="color:#b8ff35">Futbol Rehberi</a></p>
  <p>© 2026 AlpSport – Tüm hakları saklıdır.</p>
  <a href="/admin.html" style="color:#b8ff35;text-decoration:none">Yönetici Girişi</a>
 </footer>
@@ -324,7 +324,7 @@ function adminCard(m){
  return `
  <article class="match">
   <div class="match-top">
-   <span>${safe(m.title||"AlpSport Yayını")}</span>
+   <span>${safe(m.title||"AlpSport Canlı Yayını")}</span>
    <span class="${live?"status-live":""}">${live?"● CANLI":m.status==="finished"?"TAMAMLANDI":"YAKLAŞAN"}</span>
   </div>
   <div class="teams">
@@ -537,7 +537,7 @@ async function loadAdminMatches(){
   adminMatches=Array.isArray(data.matches)?data.matches:[];
   const live=adminMatches.filter(m=>m.status==="live"&&m.stream_url);
   const visibleMatches=adminMatches.filter(m=>m.status!=="finished");
-  adminArea.innerHTML=visibleMatches.length?visibleMatches.map(adminCard).join(""):'<div class="empty">Henüz yönetici tarafından yayın eklenmedi.</div>';
+  adminArea.innerHTML=visibleMatches.length?visibleMatches.map(adminCard).join(""):'<div class="empty">Henüz canlı yayın başlatılmadı.</div>';
   if(!selectedMatch){
    if(live.length)playMatch(live[0]);
    else showNoLive();
@@ -551,7 +551,7 @@ async function loadAdminMatches(){
    }
   }
  }catch(error){
-  adminArea.innerHTML='<div class="empty">Yayın listesi şu anda alınamıyor.</div>';
+  adminArea.innerHTML='<div class="empty">Canlı yayın bilgisi şu anda alınamıyor.</div>';
  }
 }
 
