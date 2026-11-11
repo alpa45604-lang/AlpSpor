@@ -63,7 +63,7 @@ export async function onRequest(context) {
 
     return Response.json(data, {
       headers: {
-        "Cache-Control": "public, s-maxage=1800, max-age=300"
+        "Cache-Control": "public, s-maxage=180, max-age=120, stale-while-revalidate=60"
       }
     });
   } catch {
