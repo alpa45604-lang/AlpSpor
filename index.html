@@ -180,6 +180,53 @@ footer{margin-top:24px;padding:18px 5%}
  footer{margin-top:18px;padding:15px 4%}
 }
 
+
+/* AlpSport sade ziyaretçi arayüzü – Kasım 2026 */
+.home-intro{padding:8px 2px 4px;margin-bottom:12px}
+.home-intro h1{font-size:clamp(25px,5vw,36px);line-height:1.12;letter-spacing:-.7px;margin:0 0 7px;color:#fff}
+.home-intro h1 span{color:#b8ff35}
+.home-intro p{font-size:14px;color:#aab9ca;margin:0;line-height:1.45}
+header{padding:11px 5%;background:rgba(7,17,31,.97);border-bottom:1px solid #24384e}
+.logo{font-size:24px;letter-spacing:.3px}
+nav{display:flex;gap:15px;align-items:center}
+nav a{margin:0!important;font-size:13px!important;color:#dce5ef}
+.match-tools{grid-template-columns:minmax(0,1fr) auto auto;align-items:center;border-radius:10px;background:#0d1d30;border-color:#263d54}
+#clearMatchSearch{display:none!important}
+.match-tools-status{display:none!important}
+.match-tools label{font-size:11px}
+.match-tools input{border-radius:9px}
+.favorite-home{padding:10px 12px;border-radius:10px;margin-bottom:13px}
+.favorite-home .section-title{margin-bottom:7px}
+.favorite-home .section-title h2{font-size:16px}
+.favorite-home .live-label{font-size:10px}
+.favorite-home-tools select{padding:10px;border-radius:8px}
+.favorite-summary{padding:9px;margin-top:8px}
+#canli{scroll-margin-top:72px}
+#canli .section-title h2{font-size:19px}
+#canli .player-card{padding:10px;border-radius:11px}
+#canli .player-heading strong{font-size:15px}
+#canli .player-controls button{min-height:42px}
+#canli-maclar .section-title h2{font-size:18px}
+.swipe-hint{font-size:11px;color:#8298ae}
+.swipe-controls{position:sticky;bottom:8px;z-index:20;padding:5px;background:rgba(7,17,31,.92);backdrop-filter:blur(8px);border:1px solid #263d54;border-radius:11px}
+.swipe-tab{border-radius:8px}
+#tff-puan{scroll-margin-top:72px}
+footer .admin-entry{display:none!important}
+@media(max-width:600px){
+ header{padding:10px 4%}
+ .logo{font-size:21px}
+ nav{gap:10px}
+ nav a{font-size:11px!important}
+ .home-intro{padding:5px 1px 2px}
+ .home-intro h1{font-size:27px}
+ .home-intro p{font-size:13px}
+ .match-tools{grid-template-columns:minmax(0,1fr) auto auto;gap:6px;padding:8px}
+ .match-tools button{padding:10px 9px;font-size:11px}
+ .favorite-home{padding:9px}
+ .ad-slot{height:66px}
+}
+@media(max-width:360px){nav{gap:7px}nav a{font-size:10px!important}.logo{font-size:19px}}
+
 </style>
 <!-- Cloudflare Pages production branch main build trigger -->
 
@@ -197,17 +244,17 @@ footer{margin-top:24px;padding:18px 5%}
 
 <header>
  <div class="logo">ALP<span>SPORT</span></div>
- <nav>
-  <a href="#canli">Canlı</a>
-  <a href="#fikstur">Fikstür</a>
-  <a href="/admin.html">Yönetim</a>
+ <nav aria-label="Ana menü">
+  <a href="#canli">Canlı yayın</a>
+  <a href="#canli-maclar">Maçlar</a>
+  <a href="#tff-puan">Puan durumu</a>
  </nav>
 </header>
 
 <main class="container">
-<section class="section" aria-labelledby="alpsport-ana-baslik">
- <h1 id="alpsport-ana-baslik" style="font-size:clamp(25px,4vw,36px);line-height:1.2;margin:0 0 12px">Türkiye Futbolu ve Canlı Yayın Platformu</h1>
- <p style="color:#c0ccda;line-height:1.7;margin:0">AlpSport; Türkiye futboluna ait maç bilgilerini, TFF fikstürünü ve puan durumunu tek yerde takip etmenize yardımcı olur. Ayrıca kendi canlı yayınınızı AlpSport üzerinden izleyicilerle aynı sayfada paylaşabilirsiniz.</p>
+<section class="section home-intro" aria-labelledby="alpsport-ana-baslik">
+ <h1 id="alpsport-ana-baslik">Futbolun nabzı <span>AlpSport'ta.</span></h1>
+ <p>Canlı yayın, maçlar ve puan durumu. Hepsi tek yerde.</p>
 </section>
 <section class="match-tools" aria-label="Maç arama ve yenileme">
  <div>
@@ -232,13 +279,6 @@ footer{margin-top:24px;padding:18px 5%}
  <div class="swipe-hint">CANLI MAÇLAR ilk sayfada • Fikstür için sağa kaydır</div>
  <div class="swipe-track" id="matchSwipeTrack">
   <div class="swipe-page" id="livePage">
-   <section class="section" id="canli-maclar">
-    <div class="section-title"><h2>● CANLI MAÇLAR</h2><span class="live-label">● ŞİMDİ</span></div>
-    <div class="matches" id="automaticLive">
-     <div class="empty">Canlı maçlar yükleniyor...</div>
-    </div>
-   </section>
-
    <section class="section" id="canli">
     <div class="section-title">
      <h2>● ALPSPORT CANLI YAYIN</h2>
@@ -266,8 +306,15 @@ footer{margin-top:24px;padding:18px 5%}
     <div class="ad-list" id="bottomAds" hidden></div>
    </section>
 
+   <section class="section" id="canli-maclar">
+    <div class="section-title"><h2>● CANLI MAÇLAR</h2><span class="live-label">● ŞİMDİ</span></div>
+    <div class="matches" id="automaticLive">
+     <div class="empty">Canlı maçlar yükleniyor...</div>
+    </div>
+   </section>
+
    <section class="section">
-    <div class="section-title"><h2>AlpSport Canlı Yayını</h2></div>
+    <div class="section-title"><h2>Yayın Programı</h2></div>
     <div class="matches" id="adminMatches">
      <div class="empty">Canlı yayın bilgisi yükleniyor...</div>
     </div>
@@ -346,7 +393,7 @@ footer{margin-top:24px;padding:18px 5%}
  </div>
  <p><a href="/hakkimizda.html" style="color:#b8ff35">Hakkımızda</a> · <a href="/gizlilik.html" style="color:#b8ff35">Gizlilik Politikası</a> · <a href="/kullanim-kosullari.html" style="color:#b8ff35">Kullanım Koşulları</a> · <a href="/futbol-rehberi.html" style="color:#b8ff35">Futbol Rehberi</a></p>
  <p>© 2026 AlpSport – Tüm hakları saklıdır.</p>
- <a href="/admin.html" style="color:#b8ff35;text-decoration:none">Yönetici Girişi</a>
+ <a class="admin-entry" href="/admin.html" style="color:#b8ff35;text-decoration:none">Yönetici Girişi</a>
 </footer>
 
 <script>
