@@ -471,7 +471,7 @@ function automaticCard(m){
  return `
  <article class="match" data-home-team="${safe(homeName)}" data-away-team="${safe(awayName)}">
   <div class="match-top">
-   <span>Süper Lig · TFF</span>
+   <span>${safe(m.lig||"Türkiye Süper Ligi")}</span>
    <span class="${live?"status-live":""}">${live?"● CANLI":finished?"TAMAMLANDI":safe(rawStatus.toLocaleUpperCase("tr-TR"))}</span>
   </div>
   <div class="teams">
@@ -486,36 +486,53 @@ function automaticCard(m){
 
 async function loadAutomatic(){
  try{
-  const current=await getTffFixtureData();
-  const firstWeek=Number(current.hafta)||1;
-  const weeks=[current];
-  const nextWeeks=[];
-  for(let week=firstWeek+1;week<=Math.min(34,firstWeek+4);week++)nextWeeks.push(week);
-  const additional=await Promise.all(nextWeeks.map(week=>getTffFixtureData(week).catch(()=>null)));
-  additional.filter(Boolean).forEach(data=>weeks.push(data));
-  const seen=new Set();
-  const matches=weeks.flatMap(data=>Array.isArray(data.maclar)?data.maclar:[]).filter(match=>{
-   const key=[match.ev_sahibi,match.deplasman,match.tarih,match.saat].join("|").toLocaleLowerCase("tr-TR");
-   if(seen.has(key))return false;
-   seen.add(key);
-   return true;
-  });
+  const response=await fetch("/api/football",{cache:"no-store"});
+  const data=await response.json();
+  if(!response.ok||data.durum!=="basarili"||!Array.isArray(data.maclar))throw new Error(data.hata||"API-Football verisi alınamadı.");
+
+  const matches=data.maclar;
   automaticMatchesCache=matches;
   const live=matches.filter(m=>/canl|oynanıyor|devam|1\. yarı|2\. yarı|devre|uzatma|penaltı/i.test(String(m.durum||"")));
   const finished=matches.filter(m=>/tamamlandı|sona erdi|bitti|sonuçlandı/i.test(String(m.durum||"")));
   const upcoming=matches.filter(m=>!live.includes(m)&&!finished.includes(m));
-  liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda TFF verisinde canlı maç görünmüyor.</div>';
-  upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan Türkiye maçı bulunamadı.</div>';
+  liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda Türkiye Süper Liginde canlı maç görünmüyor.</div>';
+  upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan Süper Lig maçı bulunamadı.</div>';
   filterAutomaticMatches();
   renderFavoriteDashboard();
   const status=document.getElementById("matchToolsStatus");
-  if(status)status.textContent="Süper Lig · "+firstWeek+"–"+Math.min(34,firstWeek+4)+". haftalar · Son kontrol: "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})+" · "+live.length+" canlı, "+upcoming.length+" yaklaşan maç. Otomatik kontrol: 5 dakika.";
+  if(status)status.textContent="Kaynak: API-Football · "+live.length+" canlı, "+upcoming.length+" yaklaşan maç · Veriler sunucuda 15 dakikada bir yenilenir.";
  }catch(error){
-  liveArea.innerHTML='<div class="empty">TFF canlı maç verisi şu anda alınamıyor.</div>';
-  upcomingArea.innerHTML='<div class="empty">TFF fikstürü şu anda alınamıyor. Biraz sonra yenile.</div>';
+  try{
+   const current=await getTffFixtureData();
+   const firstWeek=Number(current.hafta)||1;
+   const weeks=[current];
+   const nextWeeks=[];
+   for(let week=firstWeek+1;week<=Math.min(34,firstWeek+4);week++)nextWeeks.push(week);
+   const additional=await Promise.all(nextWeeks.map(week=>getTffFixtureData(week).catch(()=>null)));
+   additional.filter(Boolean).forEach(data=>weeks.push(data));
+   const seen=new Set();
+   const matches=weeks.flatMap(data=>Array.isArray(data.maclar)?data.maclar:[]).filter(match=>{
+    const key=[match.ev_sahibi,match.deplasman,match.tarih,match.saat].join("|").toLocaleLowerCase("tr-TR");
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+   });
+   automaticMatchesCache=matches;
+   const live=matches.filter(m=>/canl|oynanıyor|devam|1\. yarı|2\. yarı|devre|uzatma|penaltı/i.test(String(m.durum||"")));
+   const finished=matches.filter(m=>/tamamlandı|sona erdi|bitti|sonuçlandı/i.test(String(m.durum||"")));
+   const upcoming=matches.filter(m=>!live.includes(m)&&!finished.includes(m));
+   liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda TFF verisinde canlı maç görünmüyor.</div>';
+   upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan Türkiye maçı bulunamadı.</div>';
+   filterAutomaticMatches();
+   renderFavoriteDashboard();
+   const status=document.getElementById("matchToolsStatus");
+   if(status)status.textContent="Yedek kaynak: TFF · "+firstWeek+"–"+Math.min(34,firstWeek+4)+". haftalar · "+live.length+" canlı, "+upcoming.length+" yaklaşan maç.";
+  }catch(fallbackError){
+   liveArea.innerHTML='<div class="empty">Canlı maç verisi şu anda alınamıyor.</div>';
+   upcomingArea.innerHTML='<div class="empty">Fikstür şu anda alınamıyor. Biraz sonra tekrar dene.</div>';
+  }
  }
 }
-
 function adminCard(m){
  const live=m.status==="live";
  return `
