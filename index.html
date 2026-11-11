@@ -223,11 +223,7 @@ footer{margin-top:24px;padding:18px 5%}
      <h2>● ALPSPORT CANLI YAYIN</h2>
      <span class="live-label">● CANLI</span>
     </div>
-    <div class="ad-list" id="topAds">
-     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 1</div></div>
-     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 2</div></div>
-     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 3</div></div>
-    </div>
+    <div class="ad-list" id="topAds" hidden></div>
     <div class="player-card">
      <div class="player-heading">
       <strong id="playerTitle">Canlı yayın bekleniyor</strong>
@@ -246,11 +242,7 @@ footer{margin-top:24px;padding:18px 5%}
       <div class="stat"><small>Toplam izlenme oturumu</small><strong id="totalViews">0</strong></div>
      </div>
     </div>
-    <div class="ad-list" id="bottomAds">
-     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 4</div></div>
-     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 5</div></div>
-     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 6</div></div>
-    </div>
+    <div class="ad-list" id="bottomAds" hidden></div>
    </section>
 
    <section class="section">
@@ -752,7 +744,12 @@ async function loadAds(){
   bottomArea.innerHTML=bottom.join("");
   topArea.hidden=top.length===0;
   bottomArea.hidden=bottom.length===0;
- }catch(error){}
+ }catch(error){
+  const topArea=document.getElementById("topAds");
+  const bottomArea=document.getElementById("bottomAds");
+  if(topArea){topArea.innerHTML="";topArea.hidden=true;}
+  if(bottomArea){bottomArea.innerHTML="";bottomArea.hidden=true;}
+ }
 }
 
 /* KOLAY MAÇ BULMA VE PAYLAŞIM */
