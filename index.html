@@ -607,6 +607,9 @@ async function checkAdminViewerAccess(){
  }
 }
 
+// Yönetici oturumu varsa izlenme sayaçlarını göster.
+checkAdminViewerAccess();
+
 async function sendHeartbeat(){
  if(!selectedMatch||document.hidden)return;
  try{
