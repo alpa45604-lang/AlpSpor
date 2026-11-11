@@ -157,6 +157,22 @@ nav a{font-size:11px;margin-left:8px}
  <p class="info">Maç bilgileri bağlı futbol veri sağlayıcısından alınır.</p>
 </section>
 
+<!-- ALPSPORT TFF FIKSTURU -->
+<section class="section" id="tff-fikstur">
+ <div class="section-title">
+  <h2>TFF Fikstürü</h2>
+  <span id="tffFixtureWeek" style="color:#b8ff35;font-size:12px">YÜKLENİYOR</span>
+ </div>
+ <div class="player-controls" style="margin:0 0 14px">
+  <button id="tffPrevWeek" type="button">ÖNCEKİ HAFTA</button>
+  <button id="tffNextWeek" type="button">SONRAKİ HAFTA</button>
+ </div>
+ <div class="matches" id="tffFixtures">
+  <div class="empty">TFF fikstürü yükleniyor...</div>
+ </div>
+ <p class="info" id="tffFixtureInfo">Türkiye liglerinin maç takvimi alınıyor.</p>
+</section>
+
 <!-- ALPSPORT TFF PUAN DURUMU -->
 <section class="section" id="tff-puan">
  <div class="section-title">
@@ -548,6 +564,72 @@ loadAds();
 setInterval(loadAutomatic,300000);
 setInterval(loadAdminMatches,15000);
 setInterval(loadAds,60000);
+
+/* TFF FIKSTURU */
+let tffCurrentWeek = null;
+
+async function loadTffFixtures(requestedWeek = null) {
+ const area = document.getElementById("tffFixtures");
+ const weekLabel = document.getElementById("tffFixtureWeek");
+ const info = document.getElementById("tffFixtureInfo");
+ area.innerHTML = '<div class="empty">TFF fikstürü yükleniyor...</div>';
+
+ try {
+  const endpoint = requestedWeek
+   ? "/api/tff?tip=fiktur&hafta=" + encodeURIComponent(requestedWeek)
+   : "/api/tff?tip=fiktur";
+  const response = await fetch(endpoint, { cache: "no-store" });
+  const data = await response.json();
+
+  if (!response.ok || data.durum !== "basarili" || !Array.isArray(data.maclar)) {
+   throw new Error(data.hata || "Fikstür verisi alınamadı.");
+  }
+
+  const returnedWeek = Number(data.hafta);
+  tffCurrentWeek = Number.isInteger(returnedWeek) && returnedWeek >= 1
+   ? returnedWeek
+   : (requestedWeek || tffCurrentWeek || 1);
+
+  weekLabel.textContent = tffCurrentWeek + ". HAFTA";
+  document.getElementById("tffPrevWeek").disabled = tffCurrentWeek <= 1;
+  document.getElementById("tffNextWeek").disabled = tffCurrentWeek >= 34;
+
+  if (!data.maclar.length) {
+   area.innerHTML = '<div class="empty">Bu hafta için maç bulunamadı.</div>';
+  } else {
+   area.innerHTML = data.maclar.map(match => {
+    const home = safe(match.ev_sahibi || "Ev sahibi");
+    const away = safe(match.deplasman || "Deplasman");
+    const date = safe(match.tarih || "Tarih belirtilmedi");
+    const time = safe(match.saat || "");
+    const matchUrl = /^https:\/\//i.test(match.mac_url || "")
+     ? '<a href="' + safe(match.mac_url) + '" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:12px;color:#b8ff35;text-decoration:none">Maç bilgisi</a>'
+     : "";
+    return '<article class="match">' +
+     '<div class="match-top"><span>Türkiye Futbol Federasyonu</span><span>' + date + '</span></div>' +
+     '<div class="teams"><div class="team">' + home + '</div><div class="vs">VS</div><div class="team">' + away + '</div></div>' +
+     '<div class="match-date">' + time + '</div>' +
+     matchUrl +
+    '</article>';
+   }).join("");
+  }
+
+  info.textContent = "Toplam " + Number(data.mac_sayisi || data.maclar.length) + " maç listelendi.";
+ } catch (error) {
+  area.innerHTML = '<div class="empty">TFF fikstürü şu anda yüklenemiyor. Biraz sonra tekrar dene.</div>';
+  weekLabel.textContent = "VERİ ALINAMADI";
+  info.textContent = error.message || "Bağlantı hatası.";
+ }
+}
+
+document.getElementById("tffPrevWeek").addEventListener("click", () => {
+ if (tffCurrentWeek > 1) loadTffFixtures(tffCurrentWeek - 1);
+});
+document.getElementById("tffNextWeek").addEventListener("click", () => {
+ if (tffCurrentWeek < 34) loadTffFixtures(tffCurrentWeek + 1);
+});
+loadTffFixtures();
+setInterval(() => loadTffFixtures(tffCurrentWeek), 300000);
 
 /* TFF PUAN DURUMU */
 async function loadTffStandings(){
