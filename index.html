@@ -128,11 +128,10 @@ nav a{font-size:11px;margin-left:8px}
    <button id="fullscreenButton" type="button">TAM EKRAN</button>
   </div>
 
-  <div class="stats">
+  <div class="stats" id="adminViewerStats" hidden>
    <div class="stat"><small>Şu an izleyen</small><strong id="activeViewers">0</strong></div>
    <div class="stat"><small>Toplam izlenme oturumu</small><strong id="totalViews">0</strong></div>
   </div>
-  <p class="info">İzleyici sayıları, yayın sayfasını açan tarayıcı oturumlarına göre hesaplanır.</p>
  </div>
 
  <div class="ad-list" id="bottomAds">
@@ -224,6 +223,7 @@ let liveAdTimer=null;
 let liveAdList=[];
 let liveAdIndex=0;
 let liveAdCycleStart=0;
+let canViewViewerStats=false;
 
 const AD_INTERVAL=20*60*1000;
 const AD_DURATION=10*1000;
@@ -345,6 +345,19 @@ function showNoLive(){
  document.getElementById("totalViews").textContent="0";
 }
 
+async function checkAdminViewerAccess(){
+ try{
+  const response=await fetch("/api/admin-status",{cache:"no-store",credentials:"same-origin"});
+  const data=await response.json();
+  canViewViewerStats=response.ok&&data.is_admin===true;
+  document.getElementById("adminViewerStats").hidden=!canViewViewerStats;
+  if(canViewViewerStats&&selectedMatch)loadViewerStats();
+ }catch(error){
+  canViewViewerStats=false;
+  document.getElementById("adminViewerStats").hidden=true;
+ }
+}
+
 async function sendHeartbeat(){
  if(!selectedMatch||document.hidden)return;
  try{
@@ -357,7 +370,7 @@ async function sendHeartbeat(){
 }
 
 async function loadViewerStats(){
- if(!selectedMatch)return;
+ if(!canViewViewerStats||!selectedMatch)return;
  try{
   const r=await fetch("/api/viewers?match_id="+encodeURIComponent(selectedMatch.id),{cache:"no-store"});
   if(!r.ok)return;
@@ -558,6 +571,7 @@ async function loadAds(){
 }
 
 /* İLK YÜKLEME */
+checkAdminViewerAccess();
 loadAutomatic();
 loadAdminMatches();
 loadAds();
