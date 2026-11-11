@@ -519,6 +519,17 @@ function startLiveAds(){
  scheduleNextLiveAd(AD_INTERVAL);
 }
 
+function embedStreamUrl(raw){
+ try{
+  const url=new URL(raw,location.href);
+  if(url.hostname==="vdo.ninja"||url.hostname.endsWith(".vdo.ninja")){
+   url.searchParams.set("cleanoutput","1");
+   url.searchParams.set("autoplay","1");
+  }
+  return url.href;
+ }catch(error){return raw;}
+}
+
 function playMatch(m){
  if(!m||!m.stream_url)return;
  stopTracking();
@@ -528,7 +539,7 @@ function playMatch(m){
  document.getElementById("playerStatus").textContent="● CANLI";
  playerWrap.innerHTML=`
   <iframe id="liveFrame"
-   src="${safe(m.stream_url)}"
+   src="${safe(embedStreamUrl(m.stream_url))}"
    allow="autoplay; fullscreen; picture-in-picture; camera; microphone; encrypted-media"
    allowfullscreen webkitallowfullscreen
    title="AlpSport canlı yayın">
