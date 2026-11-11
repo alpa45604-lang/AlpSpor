@@ -52,10 +52,13 @@ nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
 .hero p{color:#aab9ca;line-height:1.5}
 .container{width:94%;max-width:1100px;margin:25px auto}
 .section{margin-bottom:35px}
-.match-tools{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:9px;align-items:end;background:#102137;border:1px solid #29425d;border-radius:12px;padding:12px;margin:18px 0}
+.match-tools{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:9px;align-items:end;background:#102137;border:1px solid #29425d;border-radius:12px;padding:12px;margin:18px 0}
 .match-tools label{display:block;color:#aab9ca;font-size:12px;margin:0 0 6px}
 .match-tools input{width:100%;min-width:0;padding:12px;background:#07111f;color:#fff;border:1px solid #38516b;border-radius:7px;font-size:15px}
 .match-tools button{min-height:43px;padding:10px 13px;white-space:nowrap}
+.favorite-filter{background:#29425d;color:#fff}
+.favorite-filter.active{background:#b8ff35;color:#07111f}
+.team-fav{display:inline-block;background:transparent;color:#b8ff35;border:1px solid #53677e;border-radius:50%;width:25px;height:25px;min-width:25px;padding:0;margin:0 0 6px;font-size:15px;line-height:23px;vertical-align:middle}
 .match-tools-status{grid-column:1/-1;margin:0;color:#9fb1c5;font-size:12px}
 .utility-button{background:#29425d;color:#fff}
 .share-button{background:#29425d;color:#fff}
@@ -161,6 +164,7 @@ nav a{font-size:11px;margin-left:8px}
  </div>
  <button id="refreshAll" type="button">YENİLE</button>
  <button id="clearMatchSearch" class="utility-button" type="button">TEMİZLE</button>
+ <button id="toggleFavorites" class="favorite-filter" type="button" aria-pressed="false">FAVORİLERİM ☆</button>
  <p class="match-tools-status" id="matchToolsStatus" role="status" aria-live="polite">Maç verileri güncel tutulur. Aradığın takımı buradan bulabilirsin.</p>
 </section>
 <div class="swipe-shell">
@@ -321,6 +325,9 @@ let liveAdList=[];
 let liveAdIndex=0;
 let liveAdCycleStart=0;
 let canViewViewerStats=false;
+let favoriteTeams=new Set();
+let showFavoritesOnly=false;
+try{favoriteTeams=new Set(JSON.parse(localStorage.getItem("alpsport_favorite_teams")||"[]").filter(x=>typeof x==="string"));}catch(error){}
 
 const AD_INTERVAL=20*60*1000;
 const AD_DURATION=10*1000;
@@ -343,6 +350,13 @@ function dateText(value){
  return d.toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
 }
 
+function favoriteButton(team){
+ const name=String(team||"").trim();
+ if(!name)return "";
+ const active=favoriteTeams.has(name);
+ return '<button type="button" class="team-fav" data-favorite-team="'+safe(name)+'" aria-label="'+safe(name)+' takımını favorilere ekle" aria-pressed="'+(active?"true":"false")+'">'+(active?"★":"☆")+'</button>';
+}
+
 function automaticCard(m){
  const rawStatus=String(m.durum||"oynanacak");
  const normalized=rawStatus.toLocaleLowerCase("tr-TR");
@@ -361,15 +375,15 @@ function automaticCard(m){
   if(u.protocol==="https:"&&u.hostname==="www.tff.org")detail='<a href="'+safe(u.href)+'" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:12px;color:#b8ff35;text-align:center;font-size:12px">TFF maç detayını aç</a>';
  }catch(error){}
  return `
- <article class="match">
+ <article class="match" data-home-team="${safe(m.ev_sahibi||"")}" data-away-team="${safe(m.deplasman||"")}">
   <div class="match-top">
    <span>Türkiye Futbol Federasyonu</span>
    <span class="${live?"status-live":""}">${live?"● CANLI":finished?"TAMAMLANDI":safe(rawStatus.toLocaleUpperCase("tr-TR"))}</span>
   </div>
   <div class="teams">
-   <div class="team">${safe(m.ev_sahibi||"Ev sahibi")}</div>
+   <div class="team">${favoriteButton(m.ev_sahibi)}<br>${safe(m.ev_sahibi||"Ev sahibi")}</div>
    <div class="vs">${safe(scoreText)}</div>
-   <div class="team">${safe(m.deplasman||"Deplasman")}</div>
+   <div class="team">${favoriteButton(m.deplasman)}<br>${safe(m.deplasman||"Deplasman")}</div>
   </div>
   <div class="match-date">${safe(m.tarih||"Tarih belirtilmedi")} · ${safe(m.saat||"Saat belirtilmedi")}</div>
   ${detail}
@@ -700,15 +714,42 @@ function filterAutomaticMatches(){
  let visible=0;
  [liveArea,upcomingArea].forEach(area=>{
   area.querySelectorAll(".match").forEach(card=>{
-   const show=!query||card.textContent.toLocaleLowerCase("tr-TR").includes(query);
+   const matchesQuery=!query||card.textContent.toLocaleLowerCase("tr-TR").includes(query);
+   const isFavorite=favoriteTeams.has(card.dataset.homeTeam)||favoriteTeams.has(card.dataset.awayTeam);
+   const show=matchesQuery&&(!showFavoritesOnly||isFavorite);
    card.hidden=!show;
    if(show)visible++;
   });
  });
  const status=document.getElementById("matchToolsStatus");
- if(status&&query)status.textContent=visible+" eşleşme bulundu: "+query;
+ if(status&&(query||showFavoritesOnly))status.textContent=visible+(showFavoritesOnly?" favori maç":" eşleşme bulundu")+(query?": "+query:"");
 }
 document.getElementById("matchSearch").addEventListener("input",filterAutomaticMatches);
+function handleFavoriteClick(event){
+ const button=event.target.closest("[data-favorite-team]");
+ if(!button)return;
+ const team=button.dataset.favoriteTeam;
+ if(favoriteTeams.has(team))favoriteTeams.delete(team);else favoriteTeams.add(team);
+ try{localStorage.setItem("alpsport_favorite_teams",JSON.stringify([...favoriteTeams]));}catch(error){}
+ document.querySelectorAll("[data-favorite-team]").forEach(item=>{
+  const active=favoriteTeams.has(item.dataset.favoriteTeam);
+  item.textContent=active?"★":"☆";
+  item.setAttribute("aria-pressed",active?"true":"false");
+  item.setAttribute("aria-label",item.dataset.favoriteTeam+" takımını "+(active?"favorilerden çıkar":"favorilere ekle"));
+ });
+ filterAutomaticMatches();
+}
+liveArea.addEventListener("click",handleFavoriteClick);
+upcomingArea.addEventListener("click",handleFavoriteClick);
+document.getElementById("toggleFavorites").addEventListener("click",()=>{
+ showFavoritesOnly=!showFavoritesOnly;
+ const button=document.getElementById("toggleFavorites");
+ button.classList.toggle("active",showFavoritesOnly);
+ button.setAttribute("aria-pressed",showFavoritesOnly?"true":"false");
+ button.textContent=showFavoritesOnly?"FAVORİLERİM ✓":"FAVORİLERİM ☆";
+ filterAutomaticMatches();
+});
+
 document.getElementById("clearMatchSearch").addEventListener("click",()=>{
  document.getElementById("matchSearch").value="";
  filterAutomaticMatches();
