@@ -1,3 +1,4 @@
+
 export async function onRequest(context) {
   const token = context.env.FOOTBALL_DATA_TOKEN;
 
@@ -15,9 +16,10 @@ export async function onRequest(context) {
   const dateFrom = today.toISOString().slice(0, 10);
   const dateTo = endDate.toISOString().slice(0, 10);
 
+  // Türkiye Süper Lig (TSL) diğer liglerle birlikte eklendi.
   const competitions = [
     "PL", "ELC", "BL1", "SA", "PD", "FL1",
-    "DED", "PPL", "BSA", "CL", "EC", "WC"
+    "DED", "PPL", "BSA", "TSL", "CL", "EC", "WC"
   ].join(",");
 
   const url = new URL(
@@ -56,4 +58,4 @@ export async function onRequest(context) {
       { status: 502 }
     );
   }
-    }
+}
