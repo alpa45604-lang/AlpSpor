@@ -64,7 +64,8 @@ nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
 .share-button{background:#29425d;color:#fff}
 .swipe-shell{width:100%;min-width:0}
 .swipe-hint{color:#9fb1c5;font-size:12px;text-align:center;margin:0 0 10px}
-.swipe-track{display:flex;gap:0;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-behavior:smooth;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.swipe-track{display:flex;align-items:flex-start;gap:0;height:auto;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-behavior:smooth;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:none;transition:height .18s ease}
+.swipe-page{align-self:flex-start;height:auto;min-height:0}
 .swipe-track::-webkit-scrollbar{display:none}
 .swipe-page{flex:0 0 100%;min-width:0;width:100%;scroll-snap-align:start;scroll-snap-stop:always;padding:0 2px}
 .swipe-controls{display:flex;gap:10px;margin:8px 0 28px}
@@ -332,6 +333,15 @@ const swipeTabs=[...document.querySelectorAll("[data-swipe-page]")];
 function setSwipeTab(index){
  swipeTabs.forEach((tab,i)=>tab.classList.toggle("active",i===index));
 }
+function updateSwipeTrackHeight(){
+ if(!swipeTrack)return;
+ const index=Math.round(swipeTrack.scrollLeft/Math.max(1,swipeTrack.clientWidth));
+ const activePage=swipeTrack.children[index];
+ if(activePage){
+  const nextHeight=Math.ceil(activePage.getBoundingClientRect().height);
+  if(nextHeight>0)swipeTrack.style.height=nextHeight+"px";
+ }
+}
 swipeTabs.forEach(tab=>tab.addEventListener("click",()=>{
  const page=document.getElementById(Number(tab.dataset.swipePage)===0?"livePage":"fixturesPage");
  if(page)page.scrollIntoView({behavior:"smooth",block:"nearest",inline:"start"});
@@ -343,9 +353,16 @@ swipeTrack.addEventListener("scroll",()=>{
  requestAnimationFrame(()=>{
   const index=Math.round(swipeTrack.scrollLeft/Math.max(1,swipeTrack.clientWidth));
   setSwipeTab(index);
+  updateSwipeTrackHeight();
   swipeTick=false;
  });
 },{passive:true});
+window.addEventListener("resize",updateSwipeTrackHeight,{passive:true});
+const swipeResizeObserver=new ResizeObserver(updateSwipeTrackHeight);
+[...swipeTrack.children].forEach(page=>swipeResizeObserver.observe(page));
+const swipeMutationObserver=new MutationObserver(()=>requestAnimationFrame(updateSwipeTrackHeight));
+[...swipeTrack.children].forEach(page=>swipeMutationObserver.observe(page,{childList:true,subtree:true,attributes:true}));
+requestAnimationFrame(updateSwipeTrackHeight);
 
 
 let adminMatches=[];
