@@ -332,6 +332,9 @@ try{favoriteTeams=new Set(JSON.parse(localStorage.getItem("alpsport_favorite_tea
 
 const AD_INTERVAL=20*60*1000;
 const AD_DURATION=10*1000;
+let tffCurrentWeek=null;
+const tffFixtureCache=new Map();
+const tffFixtureRequests=new Map();
 
 function safe(value){
  return String(value??"").replace(/[&<>"']/g,c=>({
@@ -808,9 +811,6 @@ setInterval(loadAdminMatches,15000);
 setInterval(loadAds,60000);
 
 /* TFF FIKSTURU */
-let tffCurrentWeek = null;
-const tffFixtureCache=new Map();
-const tffFixtureRequests=new Map();
 
 async function getTffFixtureData(requestedWeek=null){
  const key=requestedWeek?String(requestedWeek):"current";
