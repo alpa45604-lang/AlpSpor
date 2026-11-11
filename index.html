@@ -29,6 +29,15 @@ nav a{color:#dce5ef;text-decoration:none;margin-left:15px;font-size:13px}
 .hero p{color:#aab9ca;line-height:1.5}
 .container{width:94%;max-width:1100px;margin:25px auto}
 .section{margin-bottom:35px}
+.swipe-shell{width:100%;min-width:0}
+.swipe-hint{color:#9fb1c5;font-size:12px;text-align:center;margin:0 0 10px}
+.swipe-track{display:flex;gap:0;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-behavior:smooth;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.swipe-track::-webkit-scrollbar{display:none}
+.swipe-page{flex:0 0 100%;min-width:0;width:100%;scroll-snap-align:start;scroll-snap-stop:always;padding:0 2px}
+.swipe-controls{display:flex;gap:10px;margin:8px 0 28px}
+.swipe-tab{flex:1;background:#102137;color:#dce5ef;border:1px solid #38516b;padding:13px 8px}
+.swipe-tab.active{background:#b8ff35;color:#07111f;border-color:#b8ff35}
+
 .section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
 .section-title h2{font-size:21px;margin:0}
 .live-label{color:#ff5555;font-size:12px;font-weight:bold}
@@ -102,77 +111,111 @@ nav a{font-size:11px;margin-left:8px}
 </section>
 
 <main class="container">
-<section class="section" id="canli">
- <div class="section-title">
-  <h2>● ALPSPORT CANLI YAYIN</h2>
-  <span class="live-label">● CANLI</span>
- </div>
+<div class="swipe-shell">
+ <div class="swipe-hint">CANLI MAÇLAR ilk sayfada • Fikstür için sağa kaydır</div>
+ <div class="swipe-track" id="matchSwipeTrack">
+  <div class="swipe-page" id="livePage">
+   <section class="section" id="canli-maclar">
+    <div class="section-title"><h2>● CANLI MAÇLAR</h2><span class="live-label">● ŞİMDİ</span></div>
+    <div class="matches" id="automaticLive">
+     <div class="empty">Canlı maçlar yükleniyor...</div>
+    </div>
+   </section>
 
- <div class="ad-list" id="topAds">
-  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 1</div></div>
-  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 2</div></div>
-  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 3</div></div>
- </div>
+   <section class="section" id="canli">
+    <div class="section-title">
+     <h2>● ALPSPORT CANLI YAYIN</h2>
+     <span class="live-label">● CANLI</span>
+    </div>
+    <div class="ad-list" id="topAds">
+     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 1</div></div>
+     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 2</div></div>
+     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 3</div></div>
+    </div>
+    <div class="player-card">
+     <div class="player-heading">
+      <strong id="playerTitle">Canlı yayın bekleniyor</strong>
+      <span class="live-label" id="playerStatus">● BEKLENİYOR</span>
+     </div>
+     <div class="player-frame-wrap" id="playerWrap">
+      <div class="player-empty">Şu anda AlpSport üzerinden başlatılmış canlı yayın bulunmuyor.</div>
+     </div>
+     <div class="player-controls">
+      <button id="fullscreenButton" type="button">TAM EKRAN</button>
+     </div>
+     <div class="stats" id="adminViewerStats" hidden>
+      <div class="stat"><small>Şu an izleyen</small><strong id="activeViewers">0</strong></div>
+      <div class="stat"><small>Toplam izlenme oturumu</small><strong id="totalViews">0</strong></div>
+     </div>
+    </div>
+    <div class="ad-list" id="bottomAds">
+     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 4</div></div>
+     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 5</div></div>
+     <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 6</div></div>
+    </div>
+   </section>
 
- <div class="player-card">
-  <div class="player-heading">
-   <strong id="playerTitle">Canlı yayın bekleniyor</strong>
-   <span class="live-label" id="playerStatus">● BEKLENİYOR</span>
+   <section class="section">
+    <div class="section-title"><h2>AlpSport Yayınları</h2></div>
+    <div class="matches" id="adminMatches">
+     <div class="empty">Yayınlar yükleniyor...</div>
+    </div>
+   </section>
   </div>
 
-  <div class="player-frame-wrap" id="playerWrap">
-   <div class="player-empty">Şu anda AlpSport üzerinden başlatılmış canlı yayın bulunmuyor.</div>
+  <div class="swipe-page" id="fixturesPage">
+   <section class="section">
+    <div class="section-title"><h2>Yaklaşan Maçlar</h2><span style="color:#b8ff35;font-size:12px">● SIRADAKİLER</span></div>
+    <div class="matches" id="automaticUpcoming">
+     <div class="empty">Fikstür yükleniyor...</div>
+    </div>
+    <p class="info">Yaklaşan maçlar bağlı futbol veri sağlayıcısından alınır.</p>
+   </section>
+
+   <section class="section" id="fikstur">
+    <div class="section-title">
+     <h2>TFF Fikstürü</h2>
+     <span id="tffFixtureWeek" style="color:#b8ff35;font-size:12px">YÜKLENİYOR</span>
+    </div>
+    <div class="player-controls" style="margin:0 0 14px">
+     <button id="tffPrevWeek" type="button">ÖNCEKİ HAFTA</button>
+     <button id="tffNextWeek" type="button">SONRAKİ HAFTA</button>
+    </div>
+    <div class="matches" id="tffFixtures">
+     <div class="empty">TFF fikstürü yükleniyor...</div>
+    </div>
+    <p class="info" id="tffFixtureInfo">Türkiye liglerinin maç takvimi alınıyor.</p>
+   </section>
   </div>
-
-  <div class="player-controls">
-   <button id="fullscreenButton" type="button">TAM EKRAN</button>
-  </div>
-
-  <div class="stats" id="adminViewerStats" hidden>
-   <div class="stat"><small>Şu an izleyen</small><strong id="activeViewers">0</strong></div>
-   <div class="stat"><small>Toplam izlenme oturumu</small><strong id="totalViews">0</strong></div>
-  </div>
  </div>
-
- <div class="ad-list" id="bottomAds">
-  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 4</div></div>
-  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 5</div></div>
-  <div class="ad-slot"><div class="ad-placeholder">Reklam alanı 6</div></div>
+ <div class="swipe-controls" aria-label="Maç sayfaları">
+  <button type="button" class="swipe-tab active" data-swipe-page="0">● CANLI MAÇLAR</button>
+  <button type="button" class="swipe-tab" data-swipe-page="1">FİKSTÜR →</button>
  </div>
-</section>
-
-<section class="section">
- <div class="section-title"><h2>Canlı Maçlar</h2><span class="live-label">● CANLI</span></div>
- <div class="matches" id="automaticLive">
-  <div class="empty">Canlı maçlar yükleniyor...</div>
- </div>
-</section>
-
-<section class="section" id="fikstur">
- <div class="section-title"><h2>Otomatik Maç Takvimi</h2><span style="color:#b8ff35;font-size:12px">● OTOMATİK</span></div>
- <div class="matches" id="automaticUpcoming">
-  <div class="empty">Fikstür yükleniyor...</div>
- </div>
- <p class="info">Maç bilgileri bağlı futbol veri sağlayıcısından alınır.</p>
-</section>
-
-<!-- ALPSPORT TFF FIKSTURU -->
-<section class="section" id="tff-fikstur">
- <div class="section-title">
-  <h2>TFF Fikstürü</h2>
-  <span id="tffFixtureWeek" style="color:#b8ff35;font-size:12px">YÜKLENİYOR</span>
- </div>
- <div class="player-controls" style="margin:0 0 14px">
-  <button id="tffPrevWeek" type="button">ÖNCEKİ HAFTA</button>
-  <button id="tffNextWeek" type="button">SONRAKİ HAFTA</button>
- </div>
- <div class="matches" id="tffFixtures">
-  <div class="empty">TFF fikstürü yükleniyor...</div>
- </div>
- <p class="info" id="tffFixtureInfo">Türkiye liglerinin maç takvimi alınıyor.</p>
-</section>
+</div>
 
 <!-- ALPSPORT TFF PUAN DURUMU -->
+<section class="section" id="tff-puan">
+ <div class="section-title">
+  <h2>TFF Puan Durumu</h2>
+  <span id="tffWeek" style="color:#b8ff35;font-size:12px">YÜKLENİYOR</span>
+ </div>
+ <div style="overflow-x:auto;background:#102137;border:1px solid #29425d;border-radius:10px">
+  <table style="width:100%;min-width:620px;border-collapse:collapse;text-align:center;font-size:13px">
+   <thead>
+    <tr>
+     <th>Sıra</th><th>Takım</th><th>O</th><th>G</th><th>B</th>
+     <th>M</th><th>A</th><th>Y</th><th>Av</th><th>P</th>
+    </tr>
+   </thead>
+   <tbody id="tffStandings">
+    <tr><td colspan="10">Puan durumu yükleniyor...</td></tr>
+   </tbody>
+  </table>
+ </div>
+ <p class="info" id="tffUpdated">TFF verileri alınıyor.</p>
+</section>
+</main><!-- ALPSPORT TFF PUAN DURUMU -->
 <section class="section" id="tff-puan">
  <div class="section-title">
   <h2>TFF Puan Durumu</h2>
@@ -213,6 +256,26 @@ const liveArea=document.getElementById("automaticLive");
 const upcomingArea=document.getElementById("automaticUpcoming");
 const adminArea=document.getElementById("adminMatches");
 const playerWrap=document.getElementById("playerWrap");
+const swipeTrack=document.getElementById("matchSwipeTrack");
+const swipeTabs=[...document.querySelectorAll("[data-swipe-page]")];
+function setSwipeTab(index){
+ swipeTabs.forEach((tab,i)=>tab.classList.toggle("active",i===index));
+}
+swipeTabs.forEach(tab=>tab.addEventListener("click",()=>{
+ const page=document.getElementById(Number(tab.dataset.swipePage)===0?"livePage":"fixturesPage");
+ if(page)page.scrollIntoView({behavior:"smooth",block:"nearest",inline:"start"});
+}));
+let swipeTick=false;
+swipeTrack.addEventListener("scroll",()=>{
+ if(swipeTick)return;
+ swipeTick=true;
+ requestAnimationFrame(()=>{
+  const index=Math.round(swipeTrack.scrollLeft/Math.max(1,swipeTrack.clientWidth));
+  setSwipeTab(index);
+  swipeTick=false;
+ });
+},{passive:true});
+
 
 let adminMatches=[];
 let selectedMatch=null;
