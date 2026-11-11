@@ -1,4 +1,25 @@
-
+<!-- ALPSPORT TFF PUAN DURUMU -->
+<section class="section" id="tff-puan">
+  <div class="section-title">
+    <h2>TFF Puan Durumu</h2>
+    <span id="tffWeek">YÜKLENİYOR</span>
+  </div>
+  <div style="overflow-x:auto">
+    <table style="width:100%;min-width:600px;border-collapse:collapse;text-align:center">
+      <thead>
+        <tr>
+          <th>Sıra</th><th>Takım</th><th>O</th><th>G</th>
+          <th>B</th><th>M</th><th>A</th><th>Y</th><th>Av</th><th>P</th>
+        </tr>
+      </thead>
+      <tbody id="tffStandings">
+        <tr><td colspan="10">Puan durumu yükleniyor...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p id="tffUpdated">TFF verileri alınıyor.</p>
+</section>
+<!-- PUAN DURUMU SONU -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -553,6 +574,49 @@ loadAds();
 setInterval(loadAutomatic,300000);
 setInterval(loadAdminMatches,15000);
 setInterval(loadAds,60000);
+async function loadTffStandings() {
+  const body = document.getElementById("tffStandings");
+  const week = document.getElementById("tffWeek");
+  const updated = document.getElementById("tffUpdated");
+
+  try {
+    const response = await fetch("/api/tff?tip=puan");
+    const data = await response.json();
+
+    if (!response.ok || data.durum !== "basarili" ||
+        !Array.isArray(data.puan_cetveli)) {
+      throw new Error("Veri alınamadı");
+    }
+
+    body.innerHTML = data.puan_cetveli.map(team => `
+      <tr style="border-top:1px solid #29425d">
+        <td>${safe(team.sira)}</td>
+        <td style="text-align:left;font-weight:bold">${safe(team.takim)}</td>
+        <td>${safe(team.oynan)}</td>
+        <td>${safe(team.galibiyet)}</td>
+        <td>${safe(team.beraberlik)}</td>
+        <td>${safe(team.maglubiyet)}</td>
+        <td>${safe(team.atilan)}</td>
+        <td>${safe(team.yenilen)}</td>
+        <td>${safe(team.averaj)}</td>
+        <td style="font-weight:bold">${safe(team.puan)}</td>
+      </tr>
+    `).join("");
+
+    week.textContent = data.hafta
+      ? data.hafta + ". HAFTA"
+      : "GÜNCEL";
+
+    updated.textContent = "Son güncelleme: " +
+      (data.guncellendi || "Belirtilmedi");
+  } catch (error) {
+    body.innerHTML =
+      '<tr><td colspan="10">Puan durumu şu anda yüklenemiyor.</td></tr>';
+    week.textContent = "VERİ YOK";
+  loadTffStandings();
+setInterval(loadTffStandings, 300000);
+  }
+ }
 </script>
 </body>
 </html>
