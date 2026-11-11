@@ -86,11 +86,11 @@ button:disabled{opacity:.55;cursor:not-allowed}
     <button id="stopCamera" class="danger">YAYINI DURDUR</button>
   </div>
 
-  <label for="viewerUrl">İzleyici yayın adresi</label>
+  <label for="viewerUrl">AlpSport izleme adresi (ziyaretçilere bunu gönder)</label>
   <input id="viewerUrl" readonly placeholder="Kamera açılınca burada görünür">
   <button id="copyViewerUrl" class="secondary" style="width:100%">YAYIN ADRESİNİ KOPYALA</button>
 
-  <p class="notice">Kamera açıldığında yayın adresi maç formuna aktarılır. Tek bir canlı maç varsa adres o maça otomatik kaydedilir. Birden fazla canlı maç varsa yanlış maça bağlanmaması için otomatik kayıt yapılmaz.</p>
+  <p class="notice">Ziyaretçilere yalnızca AlpSport izleme adresini gönder. Yayın, AlpSport ana sayfasındaki oynatıcıda açılır; VDO.Ninja adresi yalnızca sitenin içindeki oynatıcı tarafından kullanılır. Kamera açıldığında yayın adresi maç formuna aktarılır.</p>
   <div id="cameraMessage"></div>
 </section>
 
@@ -290,10 +290,10 @@ async function saveStreamToSingleLiveMatch(watchUrl){
 document.getElementById("startCamera").addEventListener("click",async()=>{
   roomId=getRoomId();
 
-  const watchUrl="https://vdo.ninja/?view="+encodeURIComponent(roomId)+"&autoplay=1";
+  const watchUrl="https://vdo.ninja/?view="+encodeURIComponent(roomId)+"&cleanoutput=1&autoplay=1";
   const publisherUrl="/publisher.html?room="+encodeURIComponent(roomId);
 
-  document.getElementById("viewerUrl").value=watchUrl;
+  document.getElementById("viewerUrl").value=location.origin+"/#canli";
   document.getElementById("streamUrl").value=watchUrl;
 
   publisherTab=window.open(publisherUrl,"AlpSportYayinKamerasi");
