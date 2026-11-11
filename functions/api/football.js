@@ -1,3 +1,4 @@
+// AlpSport API-Football deploy kontrolu: 2026-11-12
 export async function onRequest(context) {
   const key = context.env.API_FOOTBALL_KEY;
   if (!key) {
