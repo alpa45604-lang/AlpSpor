@@ -129,6 +129,45 @@ nav a{font-size:11px;margin-left:8px}
 .ad-slot{height:90px}
 .player-card{padding:9px}
 }
+
+/* AlpSport kompakt düzen: gereksiz boşlukları azalt */
+.container{margin:12px auto}
+.section{margin-bottom:18px}
+.section-title{margin-bottom:9px}
+.hero{padding:22px 5%}
+.match-tools{margin:10px 0;padding:10px;gap:7px}
+.swipe-hint{margin:0 0 5px}
+.swipe-controls{margin:5px 0 14px;gap:7px}
+.swipe-tab{padding:10px 7px}
+.ad-list{gap:7px;margin:8px 0 12px}
+.ad-slot{height:76px}
+.player-card{padding:11px}
+.player-heading{margin-bottom:8px}
+.player-controls{margin-top:8px;gap:7px}
+.stats{gap:7px;margin-top:8px}
+.stat{padding:9px 12px}
+.matches{gap:9px}
+.match{padding:11px}
+.match-top{margin-bottom:9px}
+.match-date{margin-top:9px}
+.watch{margin-top:9px}
+.info{margin-top:7px}
+footer{margin-top:24px;padding:18px 5%}
+.ad-list[hidden]{display:none!important}
+@media(max-width:600px){
+ .container{width:96%;margin:9px auto}
+ .section{margin-bottom:14px}
+ .hero{padding:17px 4%}
+ .match-tools{margin:8px 0;padding:8px}
+ .match-tools input{padding:10px}
+ .section-title h2{font-size:17px}
+ .ad-slot{height:64px}
+ .player-card{padding:8px}
+ .match{padding:10px}
+ .swipe-tab{font-size:11px;padding:10px 5px}
+ footer{margin-top:18px;padding:15px 4%}
+}
+
 </style>
 <!-- Cloudflare Pages production branch main build trigger -->
 
@@ -698,15 +737,21 @@ async function loadAds(){
   if(!r.ok)return;
   const data=await r.json();
   const ads=Array.isArray(data.ads)?data.ads:[];
-  const render=(slot,number)=>{
+  const render=(slot)=>{
    const ad=ads.find(x=>x.slot===slot&&Number(x.active)===1&&x.image_url);
-   if(!ad)return `<div class="ad-slot"><div class="ad-placeholder">Reklam alanı ${number}</div></div>`;
+   if(!ad)return "";
    const img=`<img src="${safe(ad.image_url)}" alt="Reklam" loading="lazy">`;
    if(ad.target_url)return `<a class="ad-slot" href="${safe(ad.target_url)}" target="_blank" rel="noopener noreferrer">${img}</a>`;
    return `<div class="ad-slot">${img}</div>`;
   };
-  document.getElementById("topAds").innerHTML=[render("top1",1),render("top2",2),render("top3",3)].join("");
-  document.getElementById("bottomAds").innerHTML=[render("bottom1",4),render("bottom2",5),render("bottom3",6)].join("");
+  const top=["top1","top2","top3"].map(render).filter(Boolean);
+  const bottom=["bottom1","bottom2","bottom3"].map(render).filter(Boolean);
+  const topArea=document.getElementById("topAds");
+  const bottomArea=document.getElementById("bottomAds");
+  topArea.innerHTML=top.join("");
+  bottomArea.innerHTML=bottom.join("");
+  topArea.hidden=top.length===0;
+  bottomArea.hidden=bottom.length===0;
  }catch(error){}
 }
 
