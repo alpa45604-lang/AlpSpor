@@ -355,32 +355,61 @@ function renderAdFields(){
   document.getElementById("adsList").innerHTML=adSlots.map(ad=>`
     <div class="ad-item">
       <h3>${ad.name}</h3>
-      <label>Reklam verenin internet sitesi</label>
-      <input id="ad-${ad.id}-site" type="url" placeholder="https://ornek.com">
-      <label>Reklam görselinin adresi</label>
-      <input id="ad-${ad.id}-image" type="url" placeholder="https://ornek.com/reklam.jpg">
+      <input id="ad-${ad.id}-site" type="url" placeholder="Reklam linkini buraya yapıştır" autocomplete="url">
       <img id="ad-${ad.id}-preview" class="ad-preview" alt="Reklam ön izlemesi" style="display:none">
-      <label>Reklama tıklanınca açılacak adres</label>
-      <input id="ad-${ad.id}-link" type="url" placeholder="https://ornek.com">
-      <div class="ad-active">
-        <input id="ad-${ad.id}-active" type="checkbox">
-        <label for="ad-${ad.id}-active">Bu reklamı ziyaretçilere göster</label>
-      </div>
+      <p id="ad-${ad.id}-status" class="ad-help">Linki yapıştırınca reklam otomatik kaydedilir.</p>
       <button type="button" class="danger" data-delete-ad="${ad.id}" style="width:100%;margin-top:10px">SİL</button>
     </div>
   `).join("");
 
   adSlots.forEach(ad=>{
-    const input=document.getElementById("ad-"+ad.id+"-image");
-    const preview=document.getElementById("ad-"+ad.id+"-preview");
-    input.addEventListener("input",()=>{
-      preview.style.display=input.value.trim()?"block":"none";
-      if(input.value.trim())preview.src=input.value.trim();
-    });
+    const input=document.getElementById("ad-"+ad.id+"-site");
+    input.addEventListener("change",()=>saveSingleAd(ad.id));
+    input.addEventListener("paste",()=>setTimeout(()=>saveSingleAd(ad.id),100));
     document.querySelector('[data-delete-ad="'+ad.id+'"]').addEventListener("click",()=>deleteAd(ad.id));
   });
 }
 
+async function saveSingleAd(slotId){
+  const input=document.getElementById("ad-"+slotId+"-site");
+  const preview=document.getElementById("ad-"+slotId+"-preview");
+  const status=document.getElementById("ad-"+slotId+"-status");
+  const url=input.value.trim();
+  if(!url)return;
+  status.textContent="Görsel otomatik bulunuyor...";
+  try{
+    const lookup=await fetch("/api/ads-preview",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({url})});
+    const details=await lookup.json();
+    if(lookup.status===401){showLogin();throw new Error("Yönetici girişi gerekli.");}
+    if(!lookup.ok)throw new Error(details.error||"Bu link okunamadı.");
+    if(!details.image_url)throw new Error(details.message||"Bu sitede otomatik görsel bulunamadı.");
+    preview.src=details.image_url;preview.style.display="block";
+    const current=await fetch("/api/ads",{cache:"no-store",credentials:"same-origin"});
+    const currentData=await current.json();
+    if(!current.ok)throw new Error(currentData.error||"Reklamlar okunamadı.");
+    const ads=adSlots.map(slot=>{
+      const old=(currentData.ads||[]).find(item=>item.slot===slot.id)||{};
+      return {slot:slot.id,image_url:old.image_url||"",target_url:old.target_url||"",active:Number(old.active)===1};
+    });
+    const chosen=ads.find(item=>item.slot===slotId);
+    chosen.image_url=details.image_url;
+    chosen.target_url=details.target_url||url;
+    chosen.active=true;
+    const saved=await fetch("/api/ads",{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({ads})});
+    const result=await saved.json();
+    if(saved.status===401){showLogin();throw new Error("Yönetici girişi gerekli.");}
+    if(!saved.ok)throw new Error(result.error||"Reklam kaydedilemedi.");
+    status.textContent="Reklam kaydedildi. Sil düğmesine basmadıkça kalır.";
+    status.className="ad-help success";
+  }catch(error){
+    status.textContent=error.message;
+    status.className="ad-help error";
+  }
+}
+
+async function findAdImage(slotId){
+  return saveSingleAd(slotId);
+}
 async function findAdImage(slotId){
   const site=document.getElementById("ad-"+slotId+"-site");
   const image=document.getElementById("ad-"+slotId+"-image");
@@ -453,68 +482,24 @@ document.getElementById("publishQuickAd").addEventListener("click",async()=>{
 async function loadAds(){
   const area=document.getElementById("adsMessage");
   renderAdFields();
-  message(area,"Reklam bilgileri yükleniyor...");
   try{
     const response=await fetch("/api/ads",{cache:"no-store",credentials:"same-origin"});
     const data=await response.json();
-    if(response.status===401){
-      showLogin();
-      throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");
-    }
-    if(!response.ok)throw new Error(data.error||"Reklam bilgileri alınamadı.");
-
-    const ads=Array.isArray(data.ads)?data.ads:[];
+    if(response.status===401){showLogin();throw new Error("Yönetici girişi gerekli.");}
+    if(!response.ok)throw new Error(data.error||"Reklamlar alınamadı.");
     adSlots.forEach(slot=>{
-      const ad=ads.find(item=>item.slot===slot.id);
+      const ad=(data.ads||[]).find(item=>item.slot===slot.id);
       if(!ad)return;
-      const site=document.getElementById("ad-"+slot.id+"-site");
-      const image=document.getElementById("ad-"+slot.id+"-image");
-      const link=document.getElementById("ad-"+slot.id+"-link");
-      const active=document.getElementById("ad-"+slot.id+"-active");
+      const input=document.getElementById("ad-"+slot.id+"-site");
       const preview=document.getElementById("ad-"+slot.id+"-preview");
-      site.value=ad.target_url||"";
-      image.value=ad.image_url||"";
-      link.value=ad.target_url||"";
-      active.checked=Number(ad.active)===1;
-      if(image.value){
-        preview.src=image.value;
-        preview.style.display="block";
-      }
+      const status=document.getElementById("ad-"+slot.id+"-status");
+      input.value=ad.target_url||"";
+      if(ad.image_url){preview.src=ad.image_url;preview.style.display="block";}
+      status.textContent=Number(ad.active)===1?"Reklam yayında.":"Bu reklam alanı boş.";
     });
     message(area,"Reklam alanları hazır.","success");
-  }catch(error){
-    message(area,error.message,"error");
-  }
+  }catch(error){message(area,error.message,"error");}
 }
-
-document.getElementById("saveAds").addEventListener("click",async()=>{
-  const area=document.getElementById("adsMessage");
-  const ads=adSlots.map(slot=>({
-    slot:slot.id,
-    image_url:document.getElementById("ad-"+slot.id+"-image").value.trim(),
-    target_url:document.getElementById("ad-"+slot.id+"-link").value.trim(),
-    active:document.getElementById("ad-"+slot.id+"-active").checked
-  }));
-
-  message(area,"Reklamlar kaydediliyor...");
-  try{
-    const response=await fetch("/api/ads",{
-      method:"PUT",
-      headers:{"Content-Type":"application/json"},
-      credentials:"same-origin",
-      body:JSON.stringify({ads})
-    });
-    const data=await response.json();
-    if(response.status===401){
-      showLogin();
-      throw new Error("Yönetici girişi gerekli. Yeniden giriş yap.");
-    }
-    if(!response.ok)throw new Error(data.error||"Reklamlar kaydedilemedi.");
-    message(area,"Altı reklam alanı kaydedildi.","success");
-  }catch(error){
-    message(area,error.message,"error");
-  }
-});
 
 /* MAÇLAR */
 async function loadMatches(){
