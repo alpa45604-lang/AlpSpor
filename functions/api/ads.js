@@ -126,3 +126,17 @@ export async function onRequestPut({ request, env }) {
     }, 400);
   }
 }
+
+
+export async function onRequestDelete({ request, env }) {
+  if (!(await requireAdmin(request, env))) return json({ error: "Yönetici girişi gerekli." }, 401);
+  if (!env.DB) return json({ error: "Veritabanı bağlantısı bulunamadı." }, 503);
+  const slot = new URL(request.url).searchParams.get("slot");
+  if (!slots.includes(slot)) return json({ error: "Geçersiz reklam alanı." }, 400);
+  try {
+    await env.DB.prepare("UPDATE ad_slots SET image_url = '', target_url = '', active = 0, updated_at = CURRENT_TIMESTAMP WHERE slot = ?").bind(slot).run();
+    return json({ success: true, message: "Reklam silindi." });
+  } catch (error) {
+    return json({ error: "Reklam silinemedi." }, 500);
+  }
+}
