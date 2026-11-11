@@ -132,6 +132,16 @@ nav a{font-size:11px;margin-left:8px}
 .player-card{padding:9px}
 }
 
+.favorite-home{background:#102137;border:1px solid #38516b;border-radius:12px;padding:13px}
+.favorite-home-tools label{display:block;color:#aab9ca;font-size:12px;margin-bottom:6px}
+.favorite-home-tools select{width:100%;padding:12px;background:#07111f;color:#fff;border:1px solid #38516b;border-radius:8px;font-size:15px}
+.favorite-summary{background:#0b192a;border:1px solid #29425d;border-radius:9px;padding:12px;color:#dce5ef}
+.favorite-summary p{color:#aab9ca;margin:5px 0}
+.favorite-summary .favorite-stat{display:inline-block;margin:5px 8px 5px 0;padding:8px 10px;background:#142b40;border-radius:7px}
+.favorite-summary .favorite-stat strong{color:#b8ff35}
+.favorite-summary .favorite-match{padding:10px 0;border-top:1px solid #29425d}
+.favorite-summary a{color:#b8ff35}
+.team-profile-link{display:block;width:100%;padding:7px 4px;background:transparent;color:#fff;text-align:left;font-weight:bold}
 /* AlpSport kompakt düzen: gereksiz boşlukları azalt */
 .container{margin:12px auto}
 .section{margin-bottom:18px}
@@ -208,6 +218,15 @@ footer{margin-top:24px;padding:18px 5%}
  <button id="clearMatchSearch" class="utility-button" type="button">TEMİZLE</button>
  <button id="toggleFavorites" class="favorite-filter" type="button" aria-pressed="false">FAVORİLERİM ☆</button>
  <p class="match-tools-status" id="matchToolsStatus" role="status" aria-live="polite">Maç verileri güncel tutulur. Aradığın takımı buradan bulabilirsin.</p>
+</section>
+<section class="section favorite-home" id="favoriteHome" aria-labelledby="favoriteHomeTitle">
+ <div class="section-title"><h2 id="favoriteHomeTitle">⭐ Favori Takımım</h2><span class="live-label">SANA ÖZEL</span></div>
+ <div class="favorite-home-tools"><label for="favoriteTeamSelect">Takımını seç</label><select id="favoriteTeamSelect"><option value="">Önce bir takım seç</option></select></div>
+ <div id="favoriteTeamSummary" class="favorite-summary"><p>Takımını seçtiğinde maçları ve puan durumu burada öne çıkar.</p></div>
+</section>
+<section class="section" id="teamProfileSection" hidden aria-labelledby="teamProfileTitle">
+ <div class="section-title"><h2 id="teamProfileTitle">Takım Profili</h2><button type="button" class="utility-button" id="closeTeamProfile">KAPAT</button></div>
+ <div id="teamProfileContent" class="favorite-summary"></div>
 </section>
 <div class="swipe-shell">
  <div class="swipe-hint">CANLI MAÇLAR ilk sayfada • Fikstür için sağa kaydır</div>
@@ -389,6 +408,9 @@ try{favoriteTeams=new Set(JSON.parse(localStorage.getItem("alpsport_favorite_tea
 const AD_INTERVAL=20*60*1000;
 const AD_DURATION=10*1000;
 let tffCurrentWeek=null;
+let tffStandingsData=[];
+let automaticMatchesCache=[];
+let selectedFavoriteTeam=localStorage.getItem("alpsport_selected_favorite_team")||"";
 const tffFixtureCache=new Map();
 const tffFixtureRequests=new Map();
 
@@ -478,12 +500,14 @@ async function loadAutomatic(){
    seen.add(key);
    return true;
   });
+  automaticMatchesCache=matches;
   const live=matches.filter(m=>/canl|oynanıyor|devam|1\. yarı|2\. yarı|devre|uzatma|penaltı/i.test(String(m.durum||"")));
   const finished=matches.filter(m=>/tamamlandı|sona erdi|bitti|sonuçlandı/i.test(String(m.durum||"")));
   const upcoming=matches.filter(m=>!live.includes(m)&&!finished.includes(m));
   liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda TFF verisinde canlı maç görünmüyor.</div>';
   upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan Türkiye maçı bulunamadı.</div>';
   filterAutomaticMatches();
+  renderFavoriteDashboard();
   const status=document.getElementById("matchToolsStatus");
   if(status)status.textContent="Süper Lig · "+firstWeek+"–"+Math.min(34,firstWeek+4)+". haftalar · Son kontrol: "+new Date().toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})+" · "+live.length+" canlı, "+upcoming.length+" yaklaşan maç. Otomatik kontrol: 5 dakika.";
  }catch(error){
@@ -1005,10 +1029,12 @@ async function loadTffStandings(){
   if(!response.ok||data.durum!=="basarili"||!Array.isArray(data.puan_cetveli)){
    throw new Error("Veri alınamadı");
   }
+  tffStandingsData=data.puan_cetveli;
+  renderFavoriteDashboard();
   body.innerHTML=data.puan_cetveli.map(team=>`
    <tr style="border-top:1px solid #29425d">
     <td>${safe(team.sira)}</td>
-    <td style="text-align:left;font-weight:bold">${safe(team.takim)}</td>
+    <td style="text-align:left"><button type="button" class="team-profile-link" data-team-profile="${safe(team.takim)}">${safe(team.takim)}</button></td>
     <td>${safe(team.oynan)}</td>
     <td>${safe(team.galibiyet)}</td>
     <td>${safe(team.beraberlik)}</td>
@@ -1028,6 +1054,45 @@ async function loadTffStandings(){
 }
 loadTffStandings();
 setInterval(loadTffStandings,300000);
+function renderFavoriteDashboard(){
+ const select=document.getElementById("favoriteTeamSelect");
+ const summary=document.getElementById("favoriteTeamSummary");
+ if(!select||!summary)return;
+ const names=[...new Set([...tffStandingsData.map(x=>String(x.takim||"").trim()),...automaticMatchesCache.flatMap(m=>[m.ev_sahibi,m.deplasman]).map(x=>String(x||"").trim()),...favoriteTeams].filter(Boolean))].sort((a,b)=>a.localeCompare(b,"tr"));
+ select.innerHTML='<option value="">Takımını seç</option>'+names.map(name=>'<option value="'+safe(name)+'">'+safe(name)+'</option>').join("");
+ if(selectedFavoriteTeam&&!names.includes(selectedFavoriteTeam))selectedFavoriteTeam="";
+ select.value=selectedFavoriteTeam;
+ if(!selectedFavoriteTeam){summary.innerHTML='<p>Takımını seçtiğinde maçları ve puan durumu burada öne çıkar.</p>';return;}
+ const team=tffStandingsData.find(x=>String(x.takim||"").toLocaleLowerCase("tr-TR")===selectedFavoriteTeam.toLocaleLowerCase("tr-TR"));
+ const related=automaticMatchesCache.filter(m=>[m.ev_sahibi,m.deplasman].some(n=>String(n||"").toLocaleLowerCase("tr-TR")===selectedFavoriteTeam.toLocaleLowerCase("tr-TR"))).slice(0,5);
+ const stats=team?'<div class="favorite-stat">Sıra: <strong>'+safe(team.sira)+'</strong></div><div class="favorite-stat">Puan: <strong>'+safe(team.puan)+'</strong></div><div class="favorite-stat">Oynanan: <strong>'+safe(team.oynan)+'</strong></div><div class="favorite-stat">Averaj: <strong>'+safe(team.averaj)+'</strong></div>':'<p>Bu takım için puan tablosunda henüz kayıt yok.</p>';
+ const matchHtml=related.length?related.map(m=>'<div class="favorite-match"><strong>'+safe(m.ev_sahibi)+' '+safe(typeof m.skor==="string"&&m.skor.trim()?m.skor:"VS")+' '+safe(m.deplasman)+'</strong><p>'+safe(m.tarih||"Tarih belirtilmedi")+' · '+safe(m.saat||"")+' · '+safe(m.durum||"Fikstür")+'</p></div>').join(""):'<p>Bu takım için şu an gösterilebilecek maç bulunamadı.</p>';
+ const newsUrl="https://news.google.com/search?q="+encodeURIComponent(selectedFavoriteTeam+" futbol");
+ summary.innerHTML=stats+'<h3>Maçları</h3>'+matchHtml+'<p><a href="'+safe(newsUrl)+'" target="_blank" rel="noopener noreferrer">Güncel takım haberlerini aç ↗</a></p><button type="button" id="openFavoriteTeamProfile" class="utility-button">TAKIM PROFİLİNİ AÇ</button>';
+ document.getElementById("openFavoriteTeamProfile").addEventListener("click",()=>showTeamProfile(selectedFavoriteTeam));
+}
+function showTeamProfile(name){
+ const section=document.getElementById("teamProfileSection");
+ const content=document.getElementById("teamProfileContent");
+ const row=tffStandingsData.find(x=>String(x.takim||"").toLocaleLowerCase("tr-TR")===String(name).toLocaleLowerCase("tr-TR"));
+ const games=automaticMatchesCache.filter(m=>[m.ev_sahibi,m.deplasman].some(n=>String(n||"").toLocaleLowerCase("tr-TR")===String(name).toLocaleLowerCase("tr-TR")));
+ document.getElementById("teamProfileTitle").textContent=name+" | Takım Profili";
+ const stats=row?'<p><strong>Sıra:</strong> '+safe(row.sira)+' · <strong>Puan:</strong> '+safe(row.puan)+' · <strong>O:</strong> '+safe(row.oynan)+' · <strong>G:</strong> '+safe(row.galibiyet)+' · <strong>B:</strong> '+safe(row.beraberlik)+' · <strong>M:</strong> '+safe(row.maglubiyet)+' · <strong>Averaj:</strong> '+safe(row.averaj)+'</p>':'<p>Güncel puan tablosu bilgisi bulunamadı.</p>';
+ const fixtures=games.length?games.slice(0,10).map(m=>'<div class="favorite-match">'+safe(m.ev_sahibi)+' - '+safe(m.deplasman)+'<p>'+safe(m.tarih||"")+' · '+safe(m.saat||"")+' · '+safe(m.durum||"")+'</p></div>').join(""):'<p>Fikstür kaydı bulunamadı.</p>';
+ const news="https://news.google.com/search?q="+encodeURIComponent(name+" futbol");
+ content.innerHTML=stats+'<h3>Fikstür ve maçlar</h3>'+fixtures+'<p><a href="'+safe(news)+'" target="_blank" rel="noopener noreferrer">Güncel takım haberlerini aç</a></p><p class="info">Oyuncu kadrosu ve bireysel futbolcu istatistikleri, doğrulanmış kadro veri kaynağı bağlandığında eklenecek. Mevcut TFF bağlantısı takım puan durumu ve fikstür sağlıyor.</p>';
+ section.hidden=false;section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+document.getElementById("favoriteTeamSelect").addEventListener("change",event=>{
+ selectedFavoriteTeam=event.target.value;
+ if(selectedFavoriteTeam){favoriteTeams.add(selectedFavoriteTeam);try{localStorage.setItem("alpsport_favorite_teams",JSON.stringify([...favoriteTeams]));localStorage.setItem("alpsport_selected_favorite_team",selectedFavoriteTeam);}catch(error){}}
+ renderFavoriteDashboard();
+});
+document.getElementById("closeTeamProfile").addEventListener("click",()=>{document.getElementById("teamProfileSection").hidden=true;});
+document.getElementById("tffStandings").addEventListener("click",event=>{
+ const button=event.target.closest("[data-team-profile]");
+ if(button)showTeamProfile(button.dataset.teamProfile);
+});
 </script>
 </body>
 </html>
