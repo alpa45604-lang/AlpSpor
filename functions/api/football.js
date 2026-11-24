@@ -57,6 +57,7 @@ export async function onRequest(context) {
       const hasScore = Number.isFinite(goals.home) && Number.isFinite(goals.away);
       return {
         id: fixture.id,
+        tarih_iso: fixture.date || "",
         ev_sahibi: teams.home?.name || "Ev sahibi",
         deplasman: teams.away?.name || "Deplasman",
         ev_sahibi_logo: teams.home?.logo || "",
