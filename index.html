@@ -547,7 +547,7 @@ async function loadAutomatic(){
   automaticMatchesCache=matches;
   const live=matches.filter(m=>/canl|oynanıyor|devam|1\. yarı|2\. yarı|devre|uzatma|penaltı/i.test(String(m.durum||"")));
   const finished=matches.filter(m=>/tamamlandı|sona erdi|bitti|sonuçlandı/i.test(String(m.durum||"")));
-  const results=matches.filter(m=>finished.includes(m)).sort((a,b)=>String(b.tarih||"").localeCompare(String(a.tarih||"")));
+  const results=matches.filter(m=>finished.includes(m)).sort((a,b)=>new Date(b.tarih_iso||0)-new Date(a.tarih_iso||0));
   const upcoming=matches.filter(m=>!live.includes(m)&&!finished.includes(m));
   resultsArea.innerHTML=results.length?results.map(automaticCard).join(""):'<div class="empty">Son 14 günde tamamlanan maç bulunamadı.</div>';
   liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda Türkiye Süper Liginde canlı maç görünmüyor.</div>';
