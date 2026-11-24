@@ -9,7 +9,7 @@ export async function onRequest(context) {
   }
 
   const now = new Date();
-  const from = new Date(now.getTime() - 2 * 86400000).toISOString().slice(0, 10);
+  const from = new Date(now.getTime() - 14 * 86400000).toISOString().slice(0, 10);
   const to = new Date(now.getTime() + 10 * 86400000).toISOString().slice(0, 10);
   const season = now.getUTCFullYear();
 
@@ -54,7 +54,7 @@ export async function onRequest(context) {
       const goals = item.goals || {};
       const status = fixture.status || {};
       const date = fixture.date ? new Date(fixture.date) : null;
-      const hasScore = goals.home !== null && goals.away !== null;
+      const hasScore = Number.isFinite(goals.home) && Number.isFinite(goals.away);
       return {
         id: fixture.id,
         ev_sahibi: teams.home?.name || "Ev sahibi",
