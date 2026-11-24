@@ -324,6 +324,10 @@ footer .admin-entry{display:none!important}
 
   <div class="swipe-page" id="fixturesPage">
    <section class="section">
+    <div class="section-title"><h2>Oynanan Maçlar</h2><span style="color:#b8ff35;font-size:12px">● SONUÇLAR</span></div>
+    <div class="matches" id="automaticResults"><div class="empty">Son maç sonuçları yükleniyor...</div></div>
+   </section>
+   <section class="section">
     <div class="section-title"><h2>Yaklaşan Maçlar</h2><span style="color:#b8ff35;font-size:12px">● SIRADAKİLER</span></div>
     <div class="matches" id="automaticUpcoming">
      <div class="empty">Fikstür yükleniyor...</div>
@@ -400,6 +404,7 @@ footer .admin-entry{display:none!important}
 <script>
 const liveArea=document.getElementById("automaticLive");
 const upcomingArea=document.getElementById("automaticUpcoming");
+const resultsArea=document.getElementById("automaticResults");
 const adminArea=document.getElementById("adminMatches");
 const playerWrap=document.getElementById("playerWrap");
 const swipeTrack=document.getElementById("matchSwipeTrack");
@@ -542,7 +547,9 @@ async function loadAutomatic(){
   automaticMatchesCache=matches;
   const live=matches.filter(m=>/canl|oynanıyor|devam|1\. yarı|2\. yarı|devre|uzatma|penaltı/i.test(String(m.durum||"")));
   const finished=matches.filter(m=>/tamamlandı|sona erdi|bitti|sonuçlandı/i.test(String(m.durum||"")));
+  const results=matches.filter(m=>finished.includes(m)).sort((a,b)=>new Date(b.tarih_iso||0)-new Date(a.tarih_iso||0));
   const upcoming=matches.filter(m=>!live.includes(m)&&!finished.includes(m));
+  resultsArea.innerHTML=results.length?results.map(automaticCard).join(""):'<div class="empty">Son 14 günde tamamlanan maç bulunamadı.</div>';
   liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda Türkiye Süper Liginde canlı maç görünmüyor.</div>';
   upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan Süper Lig maçı bulunamadı.</div>';
   filterAutomaticMatches();
@@ -568,7 +575,9 @@ async function loadAutomatic(){
    automaticMatchesCache=matches;
    const live=matches.filter(m=>/canl|oynanıyor|devam|1\. yarı|2\. yarı|devre|uzatma|penaltı/i.test(String(m.durum||"")));
    const finished=matches.filter(m=>/tamamlandı|sona erdi|bitti|sonuçlandı/i.test(String(m.durum||"")));
+   const results=matches.filter(m=>finished.includes(m)).sort((a,b)=>String(b.tarih||"").localeCompare(String(a.tarih||"")));
    const upcoming=matches.filter(m=>!live.includes(m)&&!finished.includes(m));
+   resultsArea.innerHTML=results.length?results.map(automaticCard).join(""):'<div class="empty">Sonuçlanan maç bulunamadı.</div>';
    liveArea.innerHTML=live.length?live.map(automaticCard).join(""):'<div class="empty">Şu anda TFF verisinde canlı maç görünmüyor.</div>';
    upcomingArea.innerHTML=upcoming.length?upcoming.map(automaticCard).join(""):'<div class="empty">Yaklaşan Türkiye maçı bulunamadı.</div>';
    filterAutomaticMatches();
@@ -576,6 +585,7 @@ async function loadAutomatic(){
    const status=document.getElementById("matchToolsStatus");
    if(status)status.textContent="Yedek kaynak: TFF · "+firstWeek+"–"+Math.min(34,firstWeek+4)+". haftalar · "+live.length+" canlı, "+upcoming.length+" yaklaşan maç.";
   }catch(fallbackError){
+   resultsArea.innerHTML='<div class="empty">Maç sonuçları şu anda alınamıyor.</div>';
    liveArea.innerHTML='<div class="empty">Canlı maç verisi şu anda alınamıyor.</div>';
    upcomingArea.innerHTML='<div class="empty">Fikstür şu anda alınamıyor. Biraz sonra tekrar dene.</div>';
   }
@@ -897,7 +907,7 @@ function filterAutomaticMatches(){
  const input=document.getElementById("matchSearch");
  const query=(input?.value||"").trim().toLocaleLowerCase("tr-TR");
  let visible=0;
- [liveArea,upcomingArea].forEach(area=>{
+ [liveArea,upcomingArea,resultsArea].forEach(area=>{
   area.querySelectorAll(".match").forEach(card=>{
    const matchesQuery=!query||card.textContent.toLocaleLowerCase("tr-TR").includes(query);
    const isFavorite=favoriteTeams.has(card.dataset.homeTeam)||favoriteTeams.has(card.dataset.awayTeam);
@@ -926,6 +936,7 @@ function handleFavoriteClick(event){
 }
 liveArea.addEventListener("click",handleFavoriteClick);
 upcomingArea.addEventListener("click",handleFavoriteClick);
+resultsArea.addEventListener("click",handleFavoriteClick);
 document.getElementById("toggleFavorites").addEventListener("click",()=>{
  showFavoritesOnly=!showFavoritesOnly;
  const button=document.getElementById("toggleFavorites");
